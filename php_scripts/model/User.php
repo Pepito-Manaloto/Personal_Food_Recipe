@@ -254,8 +254,8 @@ class User
     
     public static function downloadBackup($file)
     {
-        $filePath = "\"{$_SERVER['DOCUMENT_ROOT']}/Recipe/{$file}\""; // Add double quotes because file path may have spaces
-        exec("mysqldump --routines -uroot -p10906657 --add-drop-database -B personal_food_recipe -r {$filePath}", $output, $return);
+        $filePath = "\"{$_SERVER['DOCUMENT_ROOT']}/Recipe/backup/{$file}\""; // Add double quotes because file path may have spaces
+        exec("mysqldump --routines -uroot -proot --add-drop-database -B personal_food_recipe -r {$filePath}", $output, $return);
 
         $filePath = str_replace("\"", "", $filePath); // Removes double quotes
 
@@ -267,8 +267,6 @@ class User
             header('Content-Disposition: attachment; filename="' . $file . '"');
             
             readfile($filePath);    
-            // deletes file after download
-            //unlink($filePath);
         }
         else
         {
