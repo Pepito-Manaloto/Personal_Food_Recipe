@@ -1,0 +1,1 @@
+<?php     require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/Recipe.php");        if( isset($_GET['title']) && !empty($_GET['title']) )    {        Recipe::downloadAsPdf($_GET['title']);    }?>
