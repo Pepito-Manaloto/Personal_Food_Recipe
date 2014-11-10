@@ -1,6 +1,6 @@
 <?php include('Header.php'); ?>
 <?php 
-    require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/User.php");
+    require_once(__DIR__ . "/php_scripts/model/User.php");
     
     $user  = new User();
 ?>          
@@ -15,7 +15,7 @@
         
         <p>Number of Ingredients: <a class="profileLinks" href="#">Expand</a> </p>
         
-        <form action="http://localhost/Recipe/php_scripts/CreateBackup_script.php" method="POST" id="submitForm">
+        <form action="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/php_scripts/CreateBackup_script.php" method="POST" id="submitForm">
             <input id="backupButton" type="submit" class="button" value="Create Backup"/> 
         </form>
     </div>

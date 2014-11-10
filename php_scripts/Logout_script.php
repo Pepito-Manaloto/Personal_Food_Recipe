@@ -1,1 +1,1 @@
-<?php    require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/User.php");        User::logout();?>
+<?php    require_once(__DIR__ . "/model/User.php");        User::logout();?>

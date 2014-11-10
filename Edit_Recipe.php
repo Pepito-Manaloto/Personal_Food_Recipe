@@ -1,7 +1,7 @@
 <?php include('Header.php'); ?>
 
 <?php
-require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/RecipeEditView.php");
+require_once(__DIR__ . "/php_scripts/model/RecipeEditView.php");
 
 if( isset($_GET['title']) )
 {
@@ -15,7 +15,7 @@ if( isset($_GET['title']) )
 }
 else
 {
-    header("Location: http://localhost/Recipe/Browse_Recipe/?type=My");
+    header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/Browse_Recipe/?type=My");
     exit;
 }
 ?>

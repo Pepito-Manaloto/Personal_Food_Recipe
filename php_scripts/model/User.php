@@ -40,7 +40,7 @@ class User
         }
         else
         {
-            header("Location: http://localhost/Recipe/Login/");
+            header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/Login/");
             exit;
         }
     }
@@ -66,7 +66,7 @@ class User
 
         session_destroy();
 
-        header("Location: http://localhost/Recipe/Login/");
+        header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/Login/");
     }
 
     public function getRecipeCount()

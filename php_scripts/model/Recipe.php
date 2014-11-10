@@ -61,7 +61,7 @@ class Recipe
                 
                 if($everything)
                 {
-                    copy("{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/default.jpg", "{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/recipe_images/{$this->title}.jpg");    
+                    //copy("{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/default.jpg", "{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/recipe_images/{$this->title}.jpg");    
                 }
                 
                 echo "Recipe Added!";

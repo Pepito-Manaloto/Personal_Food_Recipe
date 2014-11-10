@@ -3,7 +3,7 @@
 <?php
 //header("Cache-Control: no-cache");
 
-require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/RecipeBrowseView.php");
+require_once(__DIR__ . "/php_scripts/model/RecipeBrowseView.php");
 
 if( isset($_GET['title']) )
 {
@@ -13,15 +13,16 @@ if( isset($_GET['title']) )
     if( isset($_POST['submit']) )
     {
         $view->changeImage();
-        header("Location: http://localhost/Recipe/View_Recipe/?title={$_GET['title']}");
+        header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/View_Recipe/?title={$_GET['title']}");
         exit;
     }
 }
 else
 {
-    header("Location: http://localhost/Recipe/Browse_Recipe/?type=My");
+    header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/Browse_Recipe/?type=My");
     exit;
 }
+
 ?>
 
     <div class="recipeContent"> 
@@ -56,7 +57,7 @@ else
     
     <p class="pclear"></p>
     
-    <form action="http://localhost/Recipe/php_scripts/DownloadRecipe_script.php?title=<?php $view->showTitle(); ?>.pdf" method="POST" id="submitForm">
+    <form action="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/php_scripts/DownloadRecipe_script.php?title=<?php $view->showTitle(); ?>.pdf" method="POST" id="submitForm">
         <input type="submit" id="downloadPdfButton" value="Save as PDF" class="button" />
     </form>
 

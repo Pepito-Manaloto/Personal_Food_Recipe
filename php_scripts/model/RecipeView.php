@@ -16,6 +16,31 @@ abstract class RecipeView
     protected $comment = array();
     protected $instructions = array();
     
+    public function getAllRecipeTitle($lastUpdated)
+    {
+        global $db;
+        $mysqli = $db->getMySQLiConnection();
+        
+        $query = "CALL get_all_recipe_title(?);";
+
+        if($stmt = $mysqli->prepare($query))      
+        {
+            $stmt->bind_param("s", $lastUpdated);
+            $stmt->execute();
+            $data = array();
+
+            if($result = $stmt->get_result())
+            {
+                $data[] = mysqli_fetch_all($result);
+                $result->free_result();
+            }
+        }
+
+        $db->closeConnection();
+
+        return $data;
+    }
+
     public function getRecipe($recipe)
     {
         global $db;
@@ -26,24 +51,24 @@ abstract class RecipeView
         
         $query = "CALL get_recipe(?);"; 
     
-        if( $stmt = $mysqli->prepare($query) )      
-        {       
+        if($stmt = $mysqli->prepare($query))      
+        {
             $stmt->bind_param("s", $recipe);
             $stmt->execute();
             
             $data = array();
             do 
             {
-                if ($result = $stmt->get_result()) // Retrieves result 3 times
+                if($result = $stmt->get_result()) // Retrieves result 3 times
                 {
-                    $data[] = mysqli_fetch_all($result); // $data[QueryIndex][RowIndexOfTheQuery][ColumnIndexOfRow] 
-                    mysqli_free_result($result);
+                    $data[] = mysqli_fetch_all($result); // $data[QueryIndex][RowIndexOfTheQuery][ColumnIndexOfRow]
+                    $result->free_result();
                 }
             }while($stmt->more_results() && $stmt->next_result());
 
             if( count($data[0]) < 1 )       
             {
-                header("Location: http://localhost/Recipe/Browse_Recipe/?type=My");
+                header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/Browse_Recipe/?type=My");
                 exit;
             }
 
@@ -54,16 +79,16 @@ abstract class RecipeView
             $this->servings = $data[0][0][3];
 
             // Second select query
-            for($i=0; $i < count($data[1]); $i++ )
+            for($i=0; $i < count($data[1]); $i++)
             {
-                $this->quantity[] = $data[1][$i][0] + 0;
+                $this->quantity[] = $data[1][$i][0] + 0; // truncates trailing decimal zeros
                 $this->measurement[] = $data[1][$i][1];
                 $this->ingredient[] = $data[1][$i][2];
                 $this->comment[] =  $data[1][$i][3];
             }
 
             // Third select query
-            for($i=0; $i < count($data[2]); $i++ )
+            for($i=0; $i < count($data[2]); $i++)
             {
                 $this->instructions[] = $data[2][$i][0];
             }
@@ -74,16 +99,18 @@ abstract class RecipeView
             {
                 if( empty($this->comment[$i]) )
                 {
-                    $this->ingredients[] = "{$this->quantity[$i]} {$this->measurement[$i]} {$this->ingredient[$i]}"; 
+                    $this->ingredients[] = "{$this->quantity[$i]} {$this->measurement[$i]} {$this->ingredient[$i]}";
                 }
                 else
                 {
                     $this->ingredients[] = "{$this->quantity[$i]} {$this->measurement[$i]} {$this->ingredient[$i]} ({$this->comment[$i]})"; 
                 }
             }
-        }       
+        }    
 
         $db->closeConnection();
+
+        return $data;
     }
     
     abstract protected function showTitle();

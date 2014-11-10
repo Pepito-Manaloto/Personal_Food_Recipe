@@ -37,7 +37,7 @@ $view = new RecipeBrowseView();
                 else if($_GET['type'] == "My" ) 
                     $view->populateMyRecipe(); 
                 else
-                    header("Location: http://localhost/Recipe/404/");
+                    header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/404/");
             ?>
         </tbody>        
         
@@ -48,7 +48,7 @@ $view = new RecipeBrowseView();
             if( $_GET['type'] == "All" || $_GET['type'] == "My" )
                 $view->populatePagination($_GET['type']);
             else
-                header("Location: http://localhost/Recipe/404/");
+                header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/404/");
         ?>
     </div>
     

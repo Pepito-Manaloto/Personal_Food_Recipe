@@ -9,12 +9,19 @@ class RecipeBrowseView extends RecipeView
     private $pageNumber;
     private $orderBy;
     private $sortCategory;
-    
+    private $imagePath;
+
     public function __construct($page = 1, $order = "Asc", $cat = "All")
     {
         $this->pageNumber = ($page-1) * RecipeBrowseView::$limit;
         $this->orderBy = $order;
         $this->sortCategory = $cat;
+        $this->imagePath = "http://{$_SERVER['HTTP_HOST']}/Recipe/images/recipe_images/{$this->title}.jpg";
+        
+        if(!file_exists($this->imagePath))
+        {
+            $this->imagePath = "http://{$_SERVER['HTTP_HOST']}/Recipe/images/default.jpg";
+        }
     }
     
     public function populateBrowseRecipe()
@@ -37,14 +44,14 @@ class RecipeBrowseView extends RecipeView
                 echo
                     "<tr>
                         <td>
-                            <img src='http://localhost/Recipe/images/recipe_images/{$this->title}.jpg' width='250' height='190' alt='{$this->title}' />
+                            <img src='{$this->imagePath}' width='250' height='190' alt='{$this->title}' />
                         </td> 
                         <td>{$this->title}</td> 
                         <td>{$this->category}</td> 
                         <td>{$this->description}</td> 
                         <td>{$this->author}</td>
                         <td>
-                            <a class='anchor' href='http://localhost/Recipe/View_Recipe/?title={$this->title}'>View More</a>
+                            <a class='anchor' href='http://{$_SERVER['HTTP_HOST']}/Recipe/View_Recipe/?title={$this->title}'>View More</a>
                         </td>
                     </tr>";
             }
@@ -75,15 +82,15 @@ class RecipeBrowseView extends RecipeView
                 echo
                     "<tr>
                         <td>
-                            <img src='http://localhost/Recipe/images/recipe_images/{$this->title}.jpg' width='250' height='190' alt='{$this->title}' />
+                            <img src='{$this->imagePath}' width='250' height='190' alt='{$this->title}' />
                         </td> 
                         <td>{$this->title}</td> 
                         <td>{$this->category}</td> 
                         <td>{$this->description}</td> 
                         <td>{$this->author}</td>
                         <td>
-                            <a class='anchor' href='http://localhost/Recipe/View_Recipe/?title={$this->title}'>View More</a>
-                            <a class='anchor' href='http://localhost/Recipe/Edit_Recipe/?title={$this->title}'>Edit</a>
+                            <a class='anchor' href='http://{$_SERVER['HTTP_HOST']}/Recipe/View_Recipe/?title={$this->title}'>View More</a>
+                            <a class='anchor' href='http://{$_SERVER['HTTP_HOST']}/Recipe/Edit_Recipe/?title={$this->title}'>Edit</a>
                             <a class='anchor' id='deleteLink' href='#'>Delete</a>
                         </td>
                     </tr>";
@@ -155,7 +162,7 @@ class RecipeBrowseView extends RecipeView
     
     public function showImage()
     {
-        echo "http://localhost/Recipe/images/recipe_images/{$this->title}.jpg";
+        echo $this->imagePath;
     }
     public function showCategory()
     {
