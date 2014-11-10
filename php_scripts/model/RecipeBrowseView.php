@@ -30,7 +30,7 @@ class RecipeBrowseView extends RecipeView
     
         $mysqli = $db->getMySQLiConnection();
     
-        $query = "CALL show_Allrecipe(?,?,?,?);";   
+        $query = "CALL show_all_recipe(?,?,?,?);";   
 
         if( $stmt = $mysqli->prepare($query) )      
         {
@@ -59,7 +59,7 @@ class RecipeBrowseView extends RecipeView
         
         $db->closeConnection();
     }
-    
+
     public function populateMyRecipe()
     {
         global $db;
