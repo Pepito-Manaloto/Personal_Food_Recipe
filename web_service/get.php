@@ -1,6 +1,6 @@
 <?php
 
-require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/RecipeView.php");
+require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/RecipeBrowseView.php");
 
 $headers = apache_request_headers();
 
@@ -45,14 +45,14 @@ else
  */
 function get($lastUpdated)
 {
-    $recipeView = new RecipeView();
+    $recipeView = new RecipeBrowseView();
 
     $recipeList = $recipeView->getAllRecipeTitle($lastUpdated);
 
     $recipeListSize = count($recipeList);
     $data = array();
 
-    foreach($i = 0; $i < $recipeListSize; $i++)
+    for($i = 0; $i < $recipeListSize; $i++)
     {
         $data[$i][] = $recipeView->getRecipe($recipeList[$i]); // $data[RecipeIndex][QueryIndex][RowIndexOfTheQuery][ColumnIndexOfRow]
         

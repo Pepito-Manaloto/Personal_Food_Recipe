@@ -66,7 +66,7 @@ abstract class RecipeView
                 }
             }while($stmt->more_results() && $stmt->next_result());
 
-            if( count($data[0]) < 1 )       
+            if(count($data[0]) < 1)
             {
                 header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/Browse_Recipe/?type=My");
                 exit;
