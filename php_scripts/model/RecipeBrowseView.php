@@ -125,7 +125,7 @@ class RecipeBrowseView extends RecipeView
             $stmt->bind_result($total);
             $stmt->fetch();
         
-            $totalNumber = ceil( $total / self::$limit);
+            $totalNumber = ceil($total / self::$limit);
             
             echo "<span>1</span> ";
             
@@ -154,33 +154,37 @@ class RecipeBrowseView extends RecipeView
             }           
         }   
     }
-    
+
     public function showTitle()
     {
         echo $this->title;
     }
-    
+
     public function showImage()
     {
         echo $this->imagePath;
     }
+
     public function showCategory()
     {
         echo $this->category;
     }
+
     public function showPreparationTime()
     {
         echo $this->preparationTime;
     }
+
     public function showDescription()
     {
         echo $this->description;
     }
+
     public function showServings()
     {
         echo $this->servings;
     }
-    
+
     public function showIngredients()
     {
         $size = count($this->ingredients);

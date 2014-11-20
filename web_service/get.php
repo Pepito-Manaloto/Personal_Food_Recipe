@@ -16,7 +16,7 @@ if(isset($headers['Authorization']))
         {
             $lastUpdated = $_GET['last_updated'];
         }
-    
+
         $data = get($lastUpdated);
 
         http_response_code(200); // OK
@@ -54,8 +54,8 @@ function get($lastUpdated)
 
     for($i = 0; $i < $recipeListSize; $i++)
     {
-        $data[$i][] = $recipeView->getRecipe($recipeList[$i]); // $data[RecipeIndex][QueryIndex][RowIndexOfTheQuery][ColumnIndexOfRow]
-        
+        $data[$recipeList[$i]] = $recipeView->getRecipe($recipeList[$i]); // $data[RecipeTitle][QueryIndex][RowIndexOfTheQuery][ColumnName]
+
         $imagePath = "http://{$_SERVER['HTTP_HOST']}/Recipe/images/recipe_images/{$recipeList[$i]}.jpg";
         
         if(!file_exists($imagePath))
@@ -63,10 +63,10 @@ function get($lastUpdated)
             $imagePath = "http://{$_SERVER['HTTP_HOST']}/Recipe/images/default.jpg";
         }
 
-        $data[$i][] = file_get_contents(base64_encode($imagePath));
+        $data[$recipeList[$i]][] = base64_encode(file_get_contents($imagePath));
     }
 
-    return $data;
+    return json_encode($data);
 }
 
 ?>

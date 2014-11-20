@@ -17,14 +17,14 @@ class Recipe
     private $comment = array();
     private $instructions = array();
     private $jsonData = array();
-    
+
     private $ingredientsCount;
     private $instructionsCount;
-    
+
     private $mysqli;
-    
+
     public static $categories = array("Beef","Chicken","Pork","Lamb","Seafood","Pasta","Vegetable","Soup","Dessert");
-    
+
     public function __construct()
     {
         global $db;

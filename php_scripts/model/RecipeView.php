@@ -27,12 +27,13 @@ abstract class RecipeView
         {
             $stmt->bind_param("s", $lastUpdated);
             $stmt->execute();
+
+            $stmt->bind_result($title);
             $data = array();
 
-            if($result = $stmt->get_result())
+            while($stmt->fetch())
             {
-                $data[] = mysqli_fetch_all($result);
-                $result->free_result();
+                $data[] = $title;
             }
         }
 
@@ -55,13 +56,14 @@ abstract class RecipeView
         {
             $stmt->bind_param("s", $recipe);
             $stmt->execute();
-            
+
             $data = array();
+
             do 
             {
                 if($result = $stmt->get_result()) // Retrieves result 3 times
                 {
-                    $data[] = mysqli_fetch_all($result); // $data[QueryIndex][RowIndexOfTheQuery][ColumnIndexOfRow]
+                    $data[] = $result->fetch_all(MYSQLI_ASSOC); // $data[QueryIndex][RowIndexOfTheQuery][ColumnName]
                     $result->free_result();
                 }
             }while($stmt->more_results() && $stmt->next_result());
@@ -73,24 +75,24 @@ abstract class RecipeView
             }
 
             // First select query
-            $this->category = $data[0][0][0];
-            $this->preparationTime = $data[0][0][1];
-            $this->description = $data[0][0][2];
-            $this->servings = $data[0][0][3];
+            $this->category = $data[0][0]['category'];
+            $this->preparationTime = $data[0][0]['preparation_time'];
+            $this->description = $data[0][0]['description'];
+            $this->servings = $data[0][0]['servings'];
 
             // Second select query
             for($i=0; $i < count($data[1]); $i++)
             {
-                $this->quantity[] = $data[1][$i][0] + 0; // truncates trailing decimal zeros
-                $this->measurement[] = $data[1][$i][1];
-                $this->ingredient[] = $data[1][$i][2];
-                $this->comment[] =  $data[1][$i][3];
+                $this->quantity[] = $data[1][$i]['quantity'] + 0; // truncates trailing decimal zeros
+                $this->measurement[] = $data[1][$i]['measurement'];
+                $this->ingredient[] = $data[1][$i]['ingredient'];
+                $this->comment[] =  $data[1][$i]['comment_'];
             }
 
             // Third select query
             for($i=0; $i < count($data[2]); $i++)
             {
-                $this->instructions[] = $data[2][$i][0];
+                $this->instructions[] = $data[2][$i]['instruction'];
             }
             
             //combine all ingredients to one array.
