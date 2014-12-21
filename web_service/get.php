@@ -37,7 +37,6 @@ else
 }
 
 /**
- * RecipeIndex - 0 to # of recipes
  * QueryIndex -  0 is Recipe information
  *               1 is ingredients
  *               2 is instructions
@@ -63,7 +62,7 @@ function get($lastUpdated)
             $imagePath = "http://{$_SERVER['HTTP_HOST']}/Recipe/images/default.jpg";
         }
 
-        $data[$recipeList[$i]][] = base64_encode(file_get_contents($imagePath));
+        //$data[$recipeList[$i]][] = base64_encode(file_get_contents($imagePath));
     }
 
     return json_encode($data);

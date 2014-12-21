@@ -83,7 +83,8 @@ abstract class RecipeView
             // Second select query
             for($i=0; $i < count($data[1]); $i++)
             {
-                $this->quantity[] = $data[1][$i]['quantity'] + 0; // truncates trailing decimal zeros
+                $data[1][$i]['quantity'] = $data[1][$i]['quantity'] + 0; // truncates trailing decimal zeros
+                $this->quantity[] = $data[1][$i]['quantity'];
                 $this->measurement[] = $data[1][$i]['measurement'];
                 $this->ingredient[] = $data[1][$i]['ingredient'];
                 $this->comment[] =  $data[1][$i]['comment_'];
