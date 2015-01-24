@@ -21,9 +21,9 @@ abstract class RecipeView
         global $db;
         $mysqli = $db->getMySQLiConnection();
         
-        $query = "CALL get_all_recipe_title(?);";
+        $query = "CALL get_all_recipe_title(?, @recently_added_count);";
 
-        if($stmt = $mysqli->prepare($query))      
+        if($stmt = $mysqli->prepare($query))
         {
             $stmt->bind_param("s", $lastUpdated);
             $stmt->execute();
@@ -35,7 +35,13 @@ abstract class RecipeView
             {
                 $data[] = $title;
             }
+            
+            $stmt->close();
         }
+
+        $select = $mysqli->query("SELECT @recently_added_count;");
+        $result = $select->fetch_assoc();
+        $data['recently_added_count'] = $result['@recently_added_count'];
 
         $db->closeConnection();
 

@@ -48,8 +48,11 @@ function get($lastUpdated)
 
     $recipeList = $recipeView->getAllRecipeTitle($lastUpdated);
 
-    $recipeListSize = count($recipeList);
     $data = array();
+    $data["recently_added_count"] = $recipeList["recently_added_count"];
+
+    unset($recipeList["recently_added_count"]);
+    $recipeListSize = count($recipeList);
 
     for($i = 0; $i < $recipeListSize; $i++)
     {
