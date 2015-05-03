@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+    "http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+    <package name="auth" extends="struts-default" abstract="true">
+        <interceptors>
+            <interceptor name="authenticateUser" class="com.aaron.recipe.web.interceptor.AuthenticateUserInterceptor"></interceptor>
+
+            <interceptor-stack name="authenticateUserStack">
+                <interceptor-ref name="exception"/>
+                <interceptor-ref name="alias"/>
+                <interceptor-ref name="servletConfig"/>
+                <interceptor-ref name="i18n"/>
+                <interceptor-ref name="prepare"/>
+                <interceptor-ref name="chain"/>
+                <interceptor-ref name="scopedModelDriven"/>
+                <interceptor-ref name="modelDriven"/>
+                <interceptor-ref name="fileUpload"/>
+                <interceptor-ref name="checkbox"/>
+                <interceptor-ref name="datetime"/>
+                <interceptor-ref name="multiselect"/>
+                <interceptor-ref name="staticParams"/>
+                <interceptor-ref name="actionMappingParams"/>
+                <interceptor-ref name="params">
+                    <param name="excludeParams">^action:.*,^method:.*</param>
+                </interceptor-ref>
+                <interceptor-ref name="conversionError"/>
+                <interceptor-ref name="validation">
+                    <param name="excludeMethods">input,back,cancel,browse,forward,createBackup</param>
+                </interceptor-ref>
+                <interceptor-ref name="workflow">
+                    <param name="excludeMethods">input,back,cancel,browse,forward,createBackup</param>
+                </interceptor-ref>
+                <interceptor-ref name="debugging"/>
+                <interceptor-ref name="deprecation"/>
+                <interceptor-ref name="authenticateUser"></interceptor-ref>
+            </interceptor-stack>
+        </interceptors>
+
+        <default-interceptor-ref name="authenticateUserStack"></default-interceptor-ref>
+
+        <global-results>
+            <result name="login">/WEB-INF/jsp/login.jsp</result>
+        </global-results>
+
+        <!-- For accessing root path, redirects to home page. -->
+        <action name="">
+            <result>/WEB-INF/jsp/home.jsp</result>
+        </action>
+    </package>
+</struts>

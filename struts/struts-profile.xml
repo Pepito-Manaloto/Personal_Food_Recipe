@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+    "http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+
+    <package name="profile" namespace="/" extends="auth">
+        <action name="profile" class="com.aaron.recipe.web.action.ProfileAction" method="forward">
+            <result name="success">/WEB-INF/jsp/profile.jsp</result>
+        </action>
+
+        <action name="editProfile" class="com.aaron.recipe.web.action.ProfileAction" method="edit">
+            <result name="*" type="stream">
+                <param name="contentType">text/html</param>
+                <param name="inputName">responseStream</param>
+            </result>
+        </action>
+
+        <action name="createBackup" class="com.aaron.recipe.web.action.ProfileAction" method="createBackup">
+            <result name="success" type="stream">
+                <param name="contentType">application/octet-stream</param>
+                <param name="contentDisposition">attachment;filename="${fileName}"</param>
+                <param name="inputName">downloadStream</param>
+                <param name="bufferSize">1024</param>
+            </result>
+            <result name="error" type="chain">profile</result>
+        </action>
+    </package>
+</struts>

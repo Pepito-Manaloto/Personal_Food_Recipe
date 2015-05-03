@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+    "http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+    <constant name="struts.ui.theme" value="simple" />
+    <constant name="struts.xwork.chaining.copyErrors" value="true"/>
+    <constant name="struts.xwork.chaining.copyFieldErrors" value="true"/>
+    <constant name="struts.xwork.chaining.copyMessages" value="true"/>
+
+    <include file="struts-loggedIn.xml"></include>
+    <include file="struts-login.xml"></include>
+    <include file="struts-register.xml"></include>
+    <include file="struts-auth.xml"></include>
+    <include file="struts-profile.xml"></include>
+
+    <package name="default" namespace="/" extends="auth">
+        <action name="home" class="com.aaron.recipe.web.action.HomeAction">
+            <result name="success">/WEB-INF/jsp/home.jsp</result>
+        </action>
+
+        <action name="logout" class="com.aaron.recipe.web.action.LogoutAction">
+            <result name="success">/WEB-INF/jsp/login.jsp</result>
+        </action>
+    </package>
+</struts>
