@@ -164,7 +164,7 @@ class User
                         
                     self::setUser($this->name); // store session
 
-                    echo "Login Successful!";       
+                    echo "Login Successful!";
                 }
             }   
         }
@@ -288,7 +288,7 @@ class User
             {
                 if( strlen($this->password) > 4 )
                 {
-                    if( preg_match( '/^[a-zA-Z0-9]*[a-zA-Z]+[0-9]+[a-zA-Z0-9]*$/',$this->password) || preg_match( '/^[a-zA-Z0-9]*[0-9]+[a-zA-Z]+[a-zA-Z0-9]*$/',$this->confirmPassword) )
+                    if( preg_match( '/^[a-zA-Z0-9]*([a-zA-Z]+[0-9]+|[0-9]+[a-zA-Z]+)[a-zA-Z0-9]*$/',$this->password) || preg_match( '/^[a-zA-Z0-9]*[0-9]+[a-zA-Z]+[a-zA-Z0-9]*$/',$this->confirmPassword) )
                     {
                         return true;
                     }

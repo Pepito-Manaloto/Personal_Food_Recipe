@@ -1,3 +1,4 @@
+baseUrl = "http://localhost/Recipe";
 function loginAjax()
 {
     $("#loginButton").click(function()
@@ -9,7 +10,7 @@ function loginAjax()
         
                                 $.ajax({
                                     type: "POST",
-                                    url: "http://192.168.1.101/Recipe/php_scripts/Login_script.php",
+                                    url: baseUrl + "/php_scripts/Login_script.php",
                                     beforeSend: function(xhr)
                                                 {
                                                     $("#loginArea img").show();
@@ -26,7 +27,7 @@ function loginAjax()
                                             else
                                             {
                                                 $("#login_error").css("color","green");
-                                                window.location.href = "http://192.168.1.101/Recipe/Home/";
+                                                window.location.href = baseUrl + "/Home/";
                                             }
 
                                             $("#login_error").text(result);
@@ -47,7 +48,7 @@ function registerAjax()
             
                                     $.ajax({
                                         type: "POST",
-                                        url: "http://192.168.1.101/Recipe/php_scripts/Register_script.php", 
+                                        url: baseUrl + "/php_scripts/Register_script.php", 
                                         beforeSend: function(xhr)
                                                     {
                                                         $("#registerForm img").show();
@@ -69,7 +70,7 @@ function registerAjax()
                                                     
                                                     setTimeout(function() 
                                                                 {
-                                                                    window.location.href = "http://192.168.1.101/Recipe/Login/";
+                                                                    window.location.href = baseUrl + "/Login/";
                                                                 },500);
                                                 }
                                              });
@@ -103,12 +104,12 @@ function navigationBarActions()
                             function()
                             {
                                 $("#nameNavList").css("display", "block");      
-                                $("#nameLink img").attr("src", "http://192.168.1.101/Recipe/images/chef_hat_hover.png");    
+                                $("#nameLink img").attr("src", baseUrl + "/images/chef_hat_hover.png");    
                             },
                             function()
                             {
                                 $("#nameNavList").css("display", "none");
-                                $("#nameLink img").attr("src", "http://192.168.1.101/Recipe/images/chef_hat.png");
+                                $("#nameLink img").attr("src", baseUrl + "/images/chef_hat.png");
                             });                         
 }
 
@@ -226,7 +227,7 @@ function createEditRecipeAjax(button,script)
 
                                     $.ajax({
                                         type: "POST",
-                                        url: "http://192.168.1.101/Recipe/php_scripts/" + script, 
+                                        url: baseUrl + "/php_scripts/" + script, 
                                         contentType: "application/json; charset=UTF-8",
                                         beforeSend: function(xhr)
                                                     {
@@ -239,7 +240,7 @@ function createEditRecipeAjax(button,script)
                                                 $(".quantityField, .measurementField, .ingredientField, .commentField").blur();
                                                 
                                                 if(result == "Recipe Added!")
-                                                    window.location.href = "http://192.168.1.101/Recipe/Browse_Recipe/?type=My";
+                                                    window.location.href = baseUrl + "/Browse_Recipe/?type=My";
                                                     
                                              });    
                                              
@@ -358,13 +359,13 @@ function deleteRecipeAjax()
                                     $.ajax({
                                     
                                         type: "POST",
-                                        url: "http://192.168.1.101/Recipe/php_scripts/DeleteRecipe_script.php", 
+                                        url: baseUrl + "/php_scripts/DeleteRecipe_script.php", 
                                         contentType: "application/json; charset=UTF-8",
                                         data: JSON.stringify(data)  
                                         
                                     }).done( function(result)
                                              {
-                                                window.location.href = "http://192.168.1.101/Recipe/Browse_Recipe/?type=My";                                                                                    
+                                                window.location.href = baseUrl + "/Browse_Recipe/?type=My";                                                                                    
                                              });    
                                              
                                 }
@@ -418,7 +419,7 @@ function editProfileAjax()
         
                             $.ajax({
                                         type: "POST",
-                                        url: "http://192.168.1.101/Recipe/php_scripts/EditUser_script.php", 
+                                        url: baseUrl + "/php_scripts/EditUser_script.php", 
                                         beforeSend: function(xhr)
                                                     {
                                                         $("#editProfileValidateDiv").css("color","blue");
@@ -442,7 +443,7 @@ function editProfileAjax()
                                                     
                                                     setTimeout(function() 
                                                                 {
-                                                                    window.location.href = "http://192.168.1.101/Recipe/Profile/";
+                                                                    window.location.href = baseUrl + "/Profile/";
                                                                 },500); 
                                                 }                                                                       
                                              });
@@ -486,7 +487,7 @@ function viewRecipeSortAjax()
                                                         $("#viewTable tbody").css("-khtml-opacity","0.75"); 
                                                         $("#viewTable tbody").css("opacity","0.75");
                                                     },
-                                        url: "http://192.168.1.101/Recipe/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order="+orderBy + "&category=" + sortCategory
+                                        url: baseUrl + "/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order="+orderBy + "&category=" + sortCategory
                                     }).done(function(result)
                                             {
                                                 $("#orderTitleHeader").text(titleHeader);
@@ -527,7 +528,7 @@ function viewRecipeSortAjax()
                                                         $("#viewTable tbody").css("-khtml-opacity","0.75"); 
                                                         $("#viewTable tbody").css("opacity","0.75"); 
                                                     },
-                                        url: "http://192.168.1.101/Recipe/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order=" + orderBy + "&category=" + sortCategory
+                                        url: baseUrl + "/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order=" + orderBy + "&category=" + sortCategory
                                     }).done(function(result)
                                             {
                                                 if( sortCategory != "All" )
@@ -587,7 +588,7 @@ function viewRecipePagination()
 
                 $.ajax({
                     type: "GET",
-                    url: "http://192.168.1.101/Recipe/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order="+orderBy + "&category=" + sortCategory
+                    url: baseUrl + "/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order="+orderBy + "&category=" + sortCategory
                 }).done(function(result)
                         {
                             $("#viewTable tbody").html(result); 
