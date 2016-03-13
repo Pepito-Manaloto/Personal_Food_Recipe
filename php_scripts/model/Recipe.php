@@ -61,7 +61,12 @@ class Recipe
                 
                 if($everything)
                 {
-                    //copy("{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/default.jpg", "{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/recipe_images/{$this->title}.jpg");    
+                    if(!is_dir("{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/recipe_images"))
+                    {
+                        mkdir("{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/recipe_images", 0777, true);
+                    }
+
+                    copy("{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/default.jpg", "{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/recipe_images/{$this->title}.jpg");
                 }
                 
                 echo "Recipe Added!";
@@ -87,21 +92,21 @@ class Recipe
         $result = true;
         $query = "CALL delete_recipe(?,?);";    
         
-        if( $stmt = $this->mysqli->prepare($query) )
+        if($stmt = $this->mysqli->prepare($query))
         {
             $newTitle = false;
             $author = User::getUser();
     
-            if( !$everything ) //edit recipe
+            if(!$everything) //edit recipe
             {
                 if( !isset($_SESSION) )
                 {
                     session_start();
                 }
-                
-                $new_image_path = "{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/recipe_images/{$this->jsonData['title']}.jpg";     
+
+                $new_image_path = "{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/recipe_images/{$this->jsonData['title']}.jpg";
                 $image_path = "{$_SERVER['DOCUMENT_ROOT']}/Recipe/images/recipe_images/{$_SESSION['editTitle']}.jpg";
-                                            
+
                 $newTitle = true;
                 
                 $stmt->bind_param("ss", $_SESSION['editTitle'], $author);           
@@ -114,7 +119,7 @@ class Recipe
                 $stmt->bind_param("ss", $this->jsonData['title'], $author);         
             }
 
-            if( $stmt->execute() )
+            if($stmt->execute())
             {           
                 if($newTitle)// edit 
                 {
@@ -122,11 +127,11 @@ class Recipe
                 }
                 else // delete
                 {
-                    if( file_exists($image_path) )
+                    if(file_exists($image_path))
                     {
                         unlink($image_path);
                     }
-                    if( file_exists($pdf_path) )
+                    if(file_exists($pdf_path))
                     {
                         unlink($pdf_path);
                     }
@@ -156,6 +161,10 @@ class Recipe
                 if( $this->create(false) ) 
                 {
                     $result = true;
+                }
+                else
+                {
+                    $this->mysqli->rollback(); //rollback delete
                 }
             }
             else
@@ -230,6 +239,11 @@ class Recipe
         {
             $pdf->MultiCell(0,0.2,"{$j}. {$this->instructions[$i]}" ,0,'L');
             $pdf->Cell(0,0.1,"",0,1,'L');
+        }
+        
+        if(!is_dir("{$_SERVER['DOCUMENT_ROOT']}/Recipe/pdf"))
+        {
+            mkdir("{$_SERVER['DOCUMENT_ROOT']}/Recipe/pdf", 0777, true);
         }
         
         $pdf->output("{$_SERVER['DOCUMENT_ROOT']}/Recipe/pdf/{$this->title}.pdf", "F");

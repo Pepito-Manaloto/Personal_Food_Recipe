@@ -231,7 +231,7 @@ function createEditRecipeAjax(button,script)
                                         contentType: "application/json; charset=UTF-8",
                                         beforeSend: function(xhr)
                                                     {
-                                                        $("#createValidateDiv").text("Processing data please wait...");                              
+                                                        $("#createValidateDiv").text("Processing data please wait...");
                                                     },
                                         data: JSON.stringify(jsonObject)            
                                     }).done( function(result)
@@ -240,12 +240,14 @@ function createEditRecipeAjax(button,script)
                                                 $(".quantityField, .measurementField, .ingredientField, .commentField").blur();
                                                 
                                                 if(result == "Recipe Added!")
+                                                {
                                                     window.location.href = baseUrl + "/Browse_Recipe/?type=My";
-                                                    
-                                             });    
+                                                }    
+
+                                             });
                                              
-                                    return false;       
-                                });                     
+                                    return false;
+                                });
 }
 
 function createEditRecipeActions()
