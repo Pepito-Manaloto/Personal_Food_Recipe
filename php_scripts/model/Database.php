@@ -1,6 +1,7 @@
 <?php
 class Database
 {
+    const CHARSET = "utf8mb4";
     private $host = "localhost";
     private $username = "root";
     private $password = "root";
@@ -19,6 +20,7 @@ class Database
         }
         else
         {
+            $this->mysqli->set_charset(self::CHARSET);
             return $this->mysqli;
         }
     }
@@ -27,7 +29,7 @@ class Database
     {
         try
         {
-            $this->pdo = new PDO("mysql:host={$this->host};dbname={$this->schema}", $this->username, $this->password);
+            $this->pdo = new PDO("mysql:host={$this->host};dbname={$this->schema};charset=" . self::CHARSET, $this->username, $this->password);
         }
         catch(PDOException $e)
         {

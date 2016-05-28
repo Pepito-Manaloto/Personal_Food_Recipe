@@ -122,6 +122,26 @@ abstract class RecipeView
         return $data;
     }
     
+    /**
+     * Converts each value of the array to UTF-8
+     */
+    public function utf8ize($data)
+    {
+        if(is_array($data))
+        {
+            foreach($data as $key => $value)
+            {
+                $data[$key] = $this->utf8ize($value);
+            }
+        }
+        else if(is_string($data))
+        {
+            return utf8_encode($data);
+        }
+
+        return $data;
+    }
+
     abstract protected function showTitle();
     abstract protected function showCategory();
     abstract protected function showPreparationTime();

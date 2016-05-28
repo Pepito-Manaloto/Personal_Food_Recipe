@@ -254,6 +254,11 @@ class User
     
     public static function downloadBackup($file)
     {
+        if(!is_dir("{$_SERVER['DOCUMENT_ROOT']}/Recipe/backup"))
+        {
+            mkdir("{$_SERVER['DOCUMENT_ROOT']}/Recipe/backup", 0777, true);
+        }
+        
         $filePath = "\"{$_SERVER['DOCUMENT_ROOT']}/Recipe/backup/{$file}\""; // Add double quotes because file path may have spaces
         exec("mysqldump --routines -uroot -proot --add-drop-database -B personal_food_recipe -r {$filePath}", $output, $return);
 
