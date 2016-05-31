@@ -16,30 +16,30 @@ class RecipeBrowseView extends RecipeView
         $this->pageNumber = ($page-1) * RecipeBrowseView::$limit;
         $this->orderBy = $order;
         $this->sortCategory = $cat;
-        $this->imagePath = "http://{$_SERVER['HTTP_HOST']}/Recipe/images/recipe_images/{$this->title}.jpg";
+        $this->imagePath = RECIPE_IMAGE_DIR . "/{$this->title}.jpg";
         
         if(!file_exists($this->imagePath))
         {
-            $this->imagePath = "http://{$_SERVER['HTTP_HOST']}/Recipe/images/default.jpg";
+            $this->imagePath = IMAGE_DIR . "/default.jpg";
         }
     }
     
     public function populateBrowseRecipe()
     {
-        global $db;
+        global $db, $logger;
     
         $mysqli = $db->getMySQLiConnection();
     
         $query = "CALL show_all_recipe(?,?,?,?);";   
 
-        if( $stmt = $mysqli->prepare($query) )      
+        if($stmt = $mysqli->prepare($query))
         {
             $stmt->bind_param("ssii", $this->sortCategory, $this->orderBy, self::$limit, $this->pageNumber); 
             $stmt->execute();
-    
+
             $stmt->bind_result($this->title, $this->category, $this->description, $this->author);
 
-            while( $stmt->fetch() )
+            while($stmt->fetch())
             {
                 echo
                     "<tr>
@@ -51,10 +51,16 @@ class RecipeBrowseView extends RecipeView
                         <td>{$this->description}</td> 
                         <td>{$this->author}</td>
                         <td>
-                            <a class='anchor' href='http://{$_SERVER['HTTP_HOST']}/Recipe/View_Recipe/?title={$this->title}'>View More</a>
+                            <a class='anchor' href='" . BASE_URL . "/View_Recipe/?title={$this->title}'>View More</a>
                         </td>
                     </tr>";
             }
+
+            $logger->logMessage(basename(__FILE__), __LINE__, "populateBrowseRecipe", "CALL show_all_recipe({$this->sortCategory}, {$this->orderBy}, " . self::$limit . ", {$this->pageNumber})");
+        }
+        else
+        {
+            $logger->logMessage(basename(__FILE__), __LINE__, "populateBrowseRecipe", "Error in getting all recipe. error={$mysqli->error}");
         }
         
         $db->closeConnection();
@@ -62,22 +68,22 @@ class RecipeBrowseView extends RecipeView
 
     public function populateMyRecipe()
     {
-        global $db;
+        global $db, $logger;
 
         $mysqli = $db->getMySQLiConnection();
         
-        $query = "CALL show_recipe(?,?,?,?,?);";    
+        $query = "CALL show_recipe(?,?,?,?,?);";
     
-        if( $stmt = $mysqli->prepare($query) )      
+        if($stmt = $mysqli->prepare($query))
         {
-            $this->author = User::getUser();    
-                    
+            $this->author = User::getUser();
+
             $stmt->bind_param("sssii", $this->author, $this->sortCategory, $this->orderBy, self::$limit, $this->pageNumber);
             $stmt->execute();
 
             $stmt->bind_result($this->title,$this->category,$this->description);
-            
-            while( $stmt->fetch() )
+
+            while($stmt->fetch())
             {
                 echo
                     "<tr>
@@ -89,12 +95,18 @@ class RecipeBrowseView extends RecipeView
                         <td>{$this->description}</td> 
                         <td>{$this->author}</td>
                         <td>
-                            <a class='anchor' href='http://{$_SERVER['HTTP_HOST']}/Recipe/View_Recipe/?title={$this->title}'>View More</a>
-                            <a class='anchor' href='http://{$_SERVER['HTTP_HOST']}/Recipe/Edit_Recipe/?title={$this->title}'>Edit</a>
+                            <a class='anchor' href='" . BASE_URL . "/View_Recipe/?title={$this->title}'>View More</a>
+                            <a class='anchor' href='" . BASE_URL . "/Edit_Recipe/?title={$this->title}'>Edit</a>
                             <a class='anchor' id='deleteLink' href='#'>Delete</a>
                         </td>
                     </tr>";
             }
+
+            $logger->logMessage(basename(__FILE__), __LINE__, "populateMyRecipe", "CALL show_all_recipe({$this->author}, {$this->sortCategory}, {$this->orderBy}, " . self::$limit . ", {$this->pageNumber})");
+        }
+        else
+        {
+            $logger->logMessage(basename(__FILE__), __LINE__, "populateMyRecipe", "Error in getting user recipe. error={$mysqli->error}");
         }
         
         $db->closeConnection();
@@ -102,17 +114,17 @@ class RecipeBrowseView extends RecipeView
     
     public function populatePagination($type="My")
     {
-        global $db;
+        global $db, $logger;
         
         $mysqli = $db->getMySQLiConnection();
         
         $query = "CALL get_recipe_count(?,?);"; 
 
-        if( $stmt = $mysqli->prepare($query) )      
+        if($stmt = $mysqli->prepare($query))
         {
             if($type == "My")
             {
-                $this->author = User::getUser();    
+                $this->author = User::getUser();
             }
             else
             {
@@ -133,20 +145,26 @@ class RecipeBrowseView extends RecipeView
             {
                 echo "<a href='#'>{$i}</a> ";
             }
+
+            $logger->logMessage(basename(__FILE__), __LINE__, "populatePagination", "CALL get_recipe_count({$this->author}, {$this->sortCategory})");
         }
-        
+        else
+        {
+            $logger->logMessage(basename(__FILE__), __LINE__, "populatePagination", "Error in getting recipe count. error={$mysqli->error}");
+        }
+
         $db->closeConnection();
     }
     
     public function changeImage()
     {
-        if( !empty($_FILES["image"]['name']) )
+        if(!empty($_FILES["image"]['name']))
         {
-            $image_path = Paths::IMAGE_PATH . "/{$this->title}.jpg";
+            $image_path = RECIPE_IMAGE_DIR . "/{$this->title}.jpg";
 
             if($_FILES["image"]["type"] == "image/jpg" || $_FILES["image"]["type"] == "image/jpeg") 
             {
-                if( file_exists($image_path) )
+                if(file_exists($image_path))
                 {
                     unlink($image_path);
                 }

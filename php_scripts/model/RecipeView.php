@@ -1,5 +1,6 @@
 <?php
 require_once(__DIR__ . "/Database.php");
+require_once(__DIR__ . "/Logger.php");
 
 abstract class RecipeView
 {   
@@ -18,7 +19,7 @@ abstract class RecipeView
     
     public function getAllRecipeTitle($lastUpdated)
     {
-        global $db;
+        global $db, $logger;
         $mysqli = $db->getMySQLiConnection();
         
         $query = "CALL get_all_recipe_title(?, @recently_added_count);";
@@ -37,6 +38,11 @@ abstract class RecipeView
             }
             
             $stmt->close();
+            $logger->logMessage(basename(__FILE__), __LINE__, "getAllRecipeTitle", "CALL get_all_recipe_title({$lastUpdated}, @recently_added_count)");
+        }
+        else
+        {
+            $logger->logMessage(basename(__FILE__), __LINE__, "getAllRecipeTitle", "Error in getting all recipe title. error={$mysqli->error}");
         }
 
         $select = $mysqli->query("SELECT @recently_added_count;");
@@ -50,7 +56,7 @@ abstract class RecipeView
 
     public function getRecipe($recipe)
     {
-        global $db;
+        global $db, $logger;
     
         $this->title = $recipe;
 
@@ -76,7 +82,7 @@ abstract class RecipeView
 
             if(count($data[0]) < 1)
             {
-                header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/Browse_Recipe/?type=My");
+                header("Location: " . BASE_URL . "/Browse_Recipe/?type=My");
                 exit;
             }
 
@@ -115,7 +121,13 @@ abstract class RecipeView
                     $this->ingredients[] = "{$this->quantity[$i]} {$this->measurement[$i]} {$this->ingredient[$i]} ({$this->comment[$i]})"; 
                 }
             }
+
+            $logger->logMessage(basename(__FILE__), __LINE__, "getRecipe", "CALL get_recipe({$recipe})");
         }    
+        else
+        {
+            $logger->logMessage(basename(__FILE__), __LINE__, "getRecipe", "Error in getting recipe information. error={$mysqli->error}");
+        }
 
         $db->closeConnection();
 

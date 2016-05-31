@@ -1,8 +1,9 @@
 <?php
-
 require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/RecipeBrowseView.php");
+require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/Logger.php");
 
 $headers = apache_request_headers();
+global $logger;
 
 if(isset($headers['Authorization']))
 {
@@ -16,6 +17,8 @@ if(isset($headers['Authorization']))
         {
             $lastUpdated = $_GET['last_updated'];
         }
+
+        $logger->logMessage(basename(__FILE__), __LINE__, "GET", "Authenticated. Get by last_updated={$lastUpdated}");
 
         $data = get($lastUpdated);
 
@@ -44,6 +47,7 @@ else
  */
 function get($lastUpdated)
 {
+    global $logger;
     $recipeView = new RecipeBrowseView();
 
     $recipeList = $recipeView->getAllRecipeTitle($lastUpdated);
@@ -53,6 +57,8 @@ function get($lastUpdated)
 
     unset($recipeList["recently_added_count"]);
     $recipeListSize = count($recipeList);
+
+    $logger->logMessage(basename(__FILE__), __LINE__, "GET", "Recipe count={$recipeListSize}");
 
     for($i = 0; $i < $recipeListSize; $i++)
     {

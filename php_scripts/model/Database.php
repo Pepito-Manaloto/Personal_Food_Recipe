@@ -1,20 +1,22 @@
 <?php
+require_once(__DIR__ . "/Logger.php");
+
 class Database
 {
     const CHARSET = "utf8mb4";
-    private $host = "localhost";
-    private $username = "root";
-    private $password = "root";
-    private $schema = "personal_food_recipe";
+    const HOST = "localhost";
+    const USERNAME = "root";
+    const PASSWORD = "root";
+    const SCHEMA = "personal_food_recipe";
     
     private $mysqli;
     private $pdo;
 
     public function getMySQLiConnection()
     {
-        $this->mysqli = new mysqli($this->host, $this->username, $this->password, $this->schema);
+        $this->mysqli = new mysqli(self::HOST, self::USERNAME, self::PASSWORD, self::SCHEMA);
         
-        if( mysqli_connect_errno() )
+        if(mysqli_connect_errno())
         {
             die("Could not connect");
         }
@@ -29,7 +31,7 @@ class Database
     {
         try
         {
-            $this->pdo = new PDO("mysql:host={$this->host};dbname={$this->schema};charset=" . self::CHARSET, $this->username, $this->password);
+            $this->pdo = new PDO("mysql:host=" . self::HOST . ";dbname=" . self::SCHEMA . ";charset=" . self::CHARSET, self::USERNAME, self::PASSWORD);
         }
         catch(PDOException $e)
         {

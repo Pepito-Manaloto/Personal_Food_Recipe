@@ -1,6 +1,7 @@
 <?php 
 require_once(__DIR__ . "/Database.php");
 require_once(__DIR__ . "/Recipe.php");
+require_once(__DIR__ . "/Logger.php");
 
 class User
 {
@@ -11,25 +12,25 @@ class User
     
     public function __construct()
     {       
-        if( isset($_POST['name']) && isset($_POST['password']) )
+        if(isset($_POST['name']) && isset($_POST['password']))
         {
             $this->name = htmlentities( $_POST['name'] ); //removes html entities
             $this->password = htmlentities( $_POST['password'] );
-            if( isset($_POST['confirmPassword']) )
+            if(isset($_POST['confirmPassword']))
             {
-                $this->confirmPassword = htmlentities( $_POST['confirmPassword'] );
+                $this->confirmPassword = htmlentities($_POST['confirmPassword']);
             }
-        }   
+        }
     }
 
     public static function loggedIn()
     {
-        if( !isset($_SESSION) )
+        if(!isset($_SESSION))
         {
             session_start();
         }
         
-        return ( isset( $_SESSION['username'] ) && !empty($_SESSION['username']) );
+        return (isset( $_SESSION['username'] ) && !empty($_SESSION['username']));
     }
 
     public static function getUser()
@@ -40,14 +41,14 @@ class User
         }
         else
         {
-            header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/Login/");
+            header("Location: " . BASE_URL . "/Login/");
             exit;
         }
     }
 
     private static function setUser($username)
     {
-        if( !isset($_SESSION) )
+        if(!isset($_SESSION))
         {
             session_start();
         }
@@ -57,7 +58,7 @@ class User
     
     public static function logout()
     {
-        if( !isset($_SESSION) )
+        if(!isset($_SESSION))
         {
             session_start();
         }
@@ -66,28 +67,33 @@ class User
 
         session_destroy();
 
-        header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/Login/");
+        header("Location: " . BASE_URL . "/Login/");
     }
 
     public function getRecipeCount()
     {
-        global $db;
+        global $db, $logger;
         $result = 0;
         
         $mysqli = $db->getMySQLiConnection(); 
         
         $query = "CALL get_recipe_count(?,?)";
         $author = self::getUser();
-        $cat = "All";
+        $allCategory = "All";
         
-        if( $stmt = $mysqli->prepare($query) )
+        if($stmt = $mysqli->prepare($query))
         {
-            $stmt->bind_param("ss", $author, $cat);
+            $stmt->bind_param("ss", $author, $allCategory);
             $stmt->execute();
             
             $stmt->bind_result($result);
             
             $stmt->fetch();
+            $logger->logMessage(basename(__FILE__), __LINE__, "getRecipeCount", "CALL get_recipe_count({$author}, {$allCategory})");
+        }
+        else
+        {
+            $logger->logMessage(basename(__FILE__), __LINE__, "getRecipeCount", "Error in getting recipe count. error={$mysqli->error}");
         }
 
         $db->closeConnection(); 
@@ -97,7 +103,7 @@ class User
     
     public function getRecipeCountByCategory($category)
     {
-        global $db;
+        global $db, $logger;
         $result = 0;
         
         $mysqli = $db->getMySQLiConnection(); 
@@ -105,7 +111,7 @@ class User
         $query = "CALL get_recipe_count(?, ?)";
         $author = self::getUser();
         
-        if( $stmt = $mysqli->prepare($query) )
+        if($stmt = $mysqli->prepare($query))
         {
             $stmt->bind_param("ss", $author, $category);
             $stmt->execute();
@@ -113,8 +119,13 @@ class User
             $stmt->bind_result($result);
             
             $stmt->fetch();
+            $logger->logMessage(basename(__FILE__), __LINE__, "getRecipeCountByCategory", "CALL get_recipe_count({$author}, {$cat})");
         }
-        
+        else
+        {
+            $logger->logMessage(basename(__FILE__), __LINE__, "getRecipeCountByCategory", "Error in getting recipe count by category. error={$mysqli->error}");
+        }
+
         $db->closeConnection(); 
         
         return $result;
@@ -124,7 +135,7 @@ class User
     {
         $result = "";
         
-        foreach( Recipe::$categories as $c)
+        foreach(Recipe::$categories as $c)
         {
             $result .= "<li> {$c}: ";
             $result .= $this->getRecipeCountByCategory($c);
@@ -136,17 +147,17 @@ class User
     
     public function login()
     {
-        global $db;
+        global $db, $logger;
         
         $mysqli = $db->getMySQLiConnection(); 
         
-        if( !empty($this->name) && !empty($this->password) )
+        if(!empty($this->name) && !empty($this->password))
         {       
             $query = "CALL user_login(?,?);";
 
-            if( $stmt = $mysqli->prepare($query) )
+            if($stmt = $mysqli->prepare($query))
             {
-                $stmt->bind_param("ss",$this->name, $this->password); 
+                $stmt->bind_param("ss", $this->name, $this->password); 
                 $stmt->execute();
 
                 $stmt->bind_result($count);
@@ -166,7 +177,13 @@ class User
 
                     echo "Login Successful!";
                 }
-            }   
+                
+                $logger->logMessage(basename(__FILE__), __LINE__, "login", "CALL get_recipe_count({$this->name}, *****)");
+            }
+            else
+            {
+                $logger->logMessage(basename(__FILE__), __LINE__, "login", "Error in logging in. error={$mysqli->error}");
+            }
         }
         else
         {
@@ -178,22 +195,22 @@ class User
     
     public function update()
     {
-        global $db;
+        global $db, $logger;
         
         $mysqli = $db->getMySQLiConnection();
         
-        if( !empty($this->name) )
+        if(!empty($this->name))
         {       
-            if( $this->correctSyntax() || ( empty($this->password) && empty($this->confirmPassword) && strlen($this->name) > 4 ) )
+            if($this->correctSyntax() || (empty($this->password) && empty($this->confirmPassword) && strlen($this->name) > 4))
             {           
                 $query = "CALL edit_user(?,?,?);";
                 $oldName = self::getUser();
                 
-                if( $stmt = $mysqli->prepare($query) )
+                if($stmt = $mysqli->prepare($query))
                 {
                     $stmt->bind_param("sss", $oldName, $this->name, $this->password);
                     
-                    if( $stmt->execute() )
+                    if($stmt->execute())
                     {
                         self::setUser($this->name);
                         $this->message = "Success"; 
@@ -202,8 +219,15 @@ class User
                     {
                         $this->message = "Username already exists.";
                     }
-                }   
+                    
+                    $logger->logMessage(basename(__FILE__), __LINE__, "update", "CALL edit_user({$this->oldName}, {$this->name}, *****)");
+                }
+                else
+                {
+                    $logger->logMessage(basename(__FILE__), __LINE__, "update", "Error in updating user. error={$mysqli->error}");
+                }
             }
+
         }
         else
         {   
@@ -217,50 +241,60 @@ class User
     
     public function register()
     {   
-        global $db;
+        global $db, $logger;
         
         $mysqli = $db->getMySQLiConnection();
         
-        if( !empty($this->name) && !empty($this->password) && !empty($this->confirmPassword) )
+        if(!empty($this->name) && !empty($this->password) && !empty($this->confirmPassword))
         {       
-            if( $this->correctSyntax() )
+            if($this->correctSyntax())
             {           
                 $query = "CALL add_user(?,?);";
                 
-                if( $stmt = $mysqli->prepare($query) )
+                if($stmt = $mysqli->prepare($query))
                 {
                     $stmt->bind_param("ss", $this->name, $this->password);
                     
-                    if( $stmt->execute() )
+                    if($stmt->execute())
                     {
                         $this->message = "Success"; 
                     }
                     else
-                    {   
+                    {
                         $this->message = "Username already exists.";
                     }
-                }   
+
+                    $logger->logMessage(basename(__FILE__), __LINE__, "register", "CALL add_user({$this->name}, *****)");
+                }
+                else
+                {
+                    $logger->logMessage(basename(__FILE__), __LINE__, "register", "Error in registering new user. error={$mysqli->error}");
+                }
             }
         }
         else
         {
             $this->message = 'Complete all fields.';
         }
-        
+
         echo $this->message;
-        
+
         $db->closeConnection();
     }
     
     public static function downloadBackup($file)
     {
-        if(!is_dir("{$_SERVER['DOCUMENT_ROOT']}/Recipe/backup"))
+        global $logger;
+        if(!is_dir(BACKUP_DIR))
         {
-            mkdir("{$_SERVER['DOCUMENT_ROOT']}/Recipe/backup", 0777, true);
+            mkdir(BACKUP_DIR, 0777, true);
+            $logger->logMessage(basename(__FILE__), __LINE__, "downloadBackup", "Backup directory created. path=" . BACKUP_DIR);
         }
-        
-        $filePath = "\"{$_SERVER['DOCUMENT_ROOT']}/Recipe/backup/{$file}\""; // Add double quotes because file path may have spaces
-        exec("mysqldump --routines -uroot -proot --add-drop-database -B personal_food_recipe -r {$filePath}", $output, $return);
+
+        $filePath = "\"" . BACKUP_DIR . "/{$file}\""; // Add double quotes because file path may have spaces
+        exec("mysqldump --routines -u" . Database::USERNAME . " -p" . Database::PASSWORD . " --add-drop-database -B " . Database::SCHEMA . " -r {$filePath}", $output, $return);
+
+        $logger->logMessage(basename(__FILE__), __LINE__, "downloadBackup", "Creating backup. output={$output} return={$return}");
 
         $filePath = str_replace("\"", "", $filePath); // Removes double quotes
 
@@ -271,7 +305,7 @@ class User
             header('Content-Type: application/sql');
             header('Content-Disposition: attachment; filename="' . $file . '"');
             
-            readfile($filePath);    
+            readfile($filePath);
         }
         else
         {
@@ -289,11 +323,12 @@ class User
         }
         else
         {
-            if( strlen($this->name) > 4 )
+            if(strlen($this->name) > 4)
             {
-                if( strlen($this->password) > 4 )
+                if(strlen($this->password) > 4)
                 {
-                    if( preg_match( '/^[a-zA-Z0-9]*([a-zA-Z]+[0-9]+|[0-9]+[a-zA-Z]+)[a-zA-Z0-9]*$/',$this->password) || preg_match( '/^[a-zA-Z0-9]*[0-9]+[a-zA-Z]+[a-zA-Z0-9]*$/',$this->confirmPassword) )
+                    if(preg_match( '/^[a-zA-Z0-9]*([a-zA-Z]+[0-9]+|[0-9]+[a-zA-Z]+)[a-zA-Z0-9]*$/', $this->password) ||
+                       preg_match( '/^[a-zA-Z0-9]*[0-9]+[a-zA-Z]+[a-zA-Z0-9]*$/', $this->confirmPassword))
                     {
                         return true;
                     }
