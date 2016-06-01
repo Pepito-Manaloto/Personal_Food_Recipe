@@ -18,6 +18,7 @@ class Database
         
         if(mysqli_connect_errno())
         {
+            http_response_code(500); // Internal Server Error
             die("Could not connect");
         }
         else
@@ -35,6 +36,7 @@ class Database
         }
         catch(PDOException $e)
         {
+            http_response_code(500); // Internal Server Error
             die("Could not connect. {$e}");
         }
         

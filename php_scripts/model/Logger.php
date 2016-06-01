@@ -17,7 +17,7 @@ class Logger
      */
     public function logMessage($filename, $codeline, $methodName, $message)
     {
-    $logLine = "[" . date("Y-m-d H:i:s") . "] {$filename}:{$codeline} - {$methodName}. {$message}";
+        $logLine = "[" . date("Y-m-d H:i:s") . "] {$filename}:{$codeline} - {$methodName}. {$message}";
         $fp = fopen(LOG_DIR . LOG_FILE, 'a');
         fwrite($fp, $logLine . "\n");
         fclose($fp);
