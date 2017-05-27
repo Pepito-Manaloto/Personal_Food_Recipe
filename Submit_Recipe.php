@@ -14,8 +14,9 @@
                         <option value="Pork">Pork</option>
                         <option value="Lamb">Lamb</option>
                         <option value="Seafood">Seafood</option>
-                        <option value="Pasta">Pasta</option>
                         <option value="Vegetable">Vegetable</option>
+                        <option value="Pasta">Pasta</option>
+                        <option value="Rice">Rice</option>
                         <option value="Soup">Soup</option>
                         <option value="Dessert">Dessert</option>
                       </select> 

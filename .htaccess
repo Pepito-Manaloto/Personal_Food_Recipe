@@ -18,7 +18,7 @@ AddType font/ttf .ttf
 AddType font/otf .otf
 AddType application/x-font-woff .woff
 
-# Protect the htaccess file
+# Protect the files
 <Files ~ ".gitignore|.htaccess|.*\.sql|.*\.log.*">
 Order Allow,Deny
 Deny from all

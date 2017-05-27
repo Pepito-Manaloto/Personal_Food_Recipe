@@ -24,7 +24,7 @@ class Recipe
 
     private $mysqli;
 
-    public static $categories = array("Beef","Chicken","Pork","Lamb","Seafood","Pasta","Vegetable","Soup","Dessert");
+    public static $categories = array("Beef","Chicken","Pork","Lamb","Seafood","Vegetable","Rice","Pasta","Soup","Dessert");
 
     public function __construct()
     {
