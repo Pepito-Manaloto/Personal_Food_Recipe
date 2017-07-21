@@ -33,8 +33,8 @@ else
             <?php
                 $view->showCategory();
                 $view->showServings();
-            ?>          
-        </div>   
+            ?>
+        </div>
 
         <div id="thirdRow"> 
             <?php
@@ -60,8 +60,8 @@ else
         <div id="instructionsContainer">
             <?php
                 $view->showInstructions();
-            ?>                  
-        </div>   
+            ?>
+        </div>
         
         <div id="createValidateDiv"></div>
 

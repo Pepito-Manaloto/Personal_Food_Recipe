@@ -38,6 +38,21 @@ CREATE TABLE `account` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `categories`
+--
+
+DROP TABLE IF EXISTS `categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `categories` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(25) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `ingredients`
 --
 
@@ -45,13 +60,13 @@ DROP TABLE IF EXISTS `ingredients`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ingredients` (
-  `title` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `recipe_id` int(10) unsigned NOT NULL,
   `quantity` decimal(6,3) DEFAULT NULL,
   `measurement` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ingredient` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `comment_` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT '-',
-  KEY `title` (`title`),
-  CONSTRAINT `ingredients_ibfk_1` FOREIGN KEY (`title`) REFERENCES `recipe` (`title`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `title` (`recipe_id`),
+  CONSTRAINT `ingredients_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `recipe` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -63,10 +78,10 @@ DROP TABLE IF EXISTS `instructions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `instructions` (
-  `title` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `recipe_id` int(10) unsigned NOT NULL,
   `instruction` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  KEY `title` (`title`),
-  CONSTRAINT `instructions_ibfk_1` FOREIGN KEY (`title`) REFERENCES `recipe` (`title`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `title` (`recipe_id`),
+  CONSTRAINT `instructions_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `recipe` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -97,18 +112,21 @@ DROP TABLE IF EXISTS `recipe`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `recipe` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `category` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category_id` int(10) unsigned NOT NULL,
   `preparation_time` smallint(5) unsigned NOT NULL,
   `description` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `servings` tinyint(3) unsigned NOT NULL,
   `author` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
   `datein` datetime NOT NULL,
   `last_updated` datetime NOT NULL,
-  PRIMARY KEY (`title`) USING BTREE,
+  PRIMARY KEY (`id`),
   KEY `FK_recipe_1` (`author`),
-  CONSTRAINT `FK_recipe_1` FOREIGN KEY (`author`) REFERENCES `account` (`username`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `FK_recipe_2` (`category_id`),
+  CONSTRAINT `FK_recipe_1` FOREIGN KEY (`author`) REFERENCES `account` (`username`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_recipe_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -146,7 +164,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `add_recipe`(in ptitle varchar(50), in pcategory varchar(20), in ppreparation_time smallint,
+CREATE DEFINER=`root`@`localhost` PROCEDURE `add_recipe`(in ptitle varchar(50), in pcategory varchar(25), in ppreparation_time smallint,
                             in pdescription varchar(300), in pservings tinyint, in pauthor varchar(30), in quantities_array varchar(300),
                             in measurements_array varchar(500), in ingredients_array varchar(1000), in comments_array varchar(2000),
                             in ingredients_count int, in instructions_array varchar(10000), in instructions_count int )
@@ -157,6 +175,7 @@ BEGIN
   DECLARE tmp_ingredients varchar(50);
   DECLARE tmp_comments varchar(100);
   DECLARE tmp_instructions varchar(500);
+  DECLARE tmp_recipe_id int;
   DECLARE counter int default 0;
 
   DECLARE EXIT HANDLER FOR SQLEXCEPTION, SQLWARNING
@@ -170,8 +189,9 @@ BEGIN
 
   START TRANSACTION;
 
-    INSERT INTO recipe(title,category,preparation_time,description,servings,author,datein, last_updated) VALUES(ptitle,pcategory,ppreparation_time,pdescription,pservings,pauthor,NOW(),NOW());
-
+    INSERT INTO recipe(title,category_id,preparation_time,description,servings,author,datein, last_updated) VALUES(ptitle,(SELECT id FROM CATEGORIES WHERE name = pcategory),ppreparation_time,pdescription,pservings,pauthor,NOW(),NOW());
+    SELECT id FROM recipe WHERE title = ptitle INTO tmp_recipe_id;
+    
     ingredients_loop: LOOP
 
       SET counter = counter + 1;
@@ -181,7 +201,7 @@ BEGIN
       SELECT strSplit(ingredients_array,'|',counter) INTO tmp_ingredients;
       SELECT strSplit(comments_array,'|',counter) INTO tmp_comments;
 
-      INSERT INTO ingredients(title,quantity,measurement,ingredient,comment_) VALUES(ptitle,tmp_quantity,tmp_measurement,tmp_ingredients,tmp_comments);
+      INSERT INTO ingredients(recipe_id,quantity,measurement,ingredient,comment_) VALUES(tmp_recipe_id,tmp_quantity,tmp_measurement,tmp_ingredients,tmp_comments);
 
       IF(counter = ingredients_count) THEN
         LEAVE ingredients_loop;
@@ -197,7 +217,7 @@ BEGIN
 
       SELECT strSplit(instructions_array,'|',counter) INTO tmp_instructions;
 
-      INSERT INTO instructions(title,instruction) VALUES(ptitle,tmp_instructions);
+      INSERT INTO instructions(recipe_id,instruction) VALUES(tmp_recipe_id,tmp_instructions);
 
       IF(counter = instructions_count) THEN
         LEAVE instructions_loop;
@@ -328,6 +348,25 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_categories` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = cp850 */ ;
+/*!50003 SET character_set_results = cp850 */ ;
+/*!50003 SET collation_connection  = cp850_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_categories`()
+begin
+select * from categories;
+end ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `get_recipe` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -341,11 +380,11 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_recipe`(in ptitle varchar(50))
 BEGIN
 
-  SELECT category, preparation_time, description, servings FROM recipe WHERE title = Ptitle;
+  SELECT c.name as category, r.preparation_time, r.description, r.servings FROM recipe r, categories c WHERE r.title = Ptitle AND r.category_id = c.id;
 
-  SELECT quantity, measurement, ingredient,comment_ FROM ingredients WHERE title = ptitle;
+  SELECT quantity, measurement, ingredient,comment_ FROM ingredients INNER JOIN recipe ON recipe_id = id WHERE title = ptitle;
 
-  SELECT instruction FROM instructions WHERE title = ptitle;
+  SELECT instruction FROM instructions INNER JOIN recipe ON recipe_id = id WHERE title = ptitle;
 
 END ;;
 DELIMITER ;
@@ -363,20 +402,20 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_recipe_count`(in pauthor varchar(30), in pcategory varchar(20))
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_recipe_count`(in pauthor varchar(30), in pcategory varchar(25))
 BEGIN
 
   IF (pauthor LIKE "") THEN
     IF (pcategory LIKE "All") THEN
       SELECT COUNT(title) FROM recipe;
     ELSE
-      SELECT COUNT(title) FROM recipe WHERE category = pcategory;
+      SELECT COUNT(r.title) FROM recipe r, categories c WHERE c.id = r.category_id AND c.name = pcategory;
     END IF;
   ELSE
     IF (pcategory LIKE "All") THEN
       SELECT COUNT(title) FROM recipe WHERE author = pauthor;
     ELSE
-      SELECT COUNT(title) FROM recipe WHERE author = pauthor AND category = pcategory;
+      SELECT COUNT(r.title) FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id AND c.name = pcategory;
     END IF;
   END IF;
 
@@ -396,20 +435,20 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `show_all_recipe`( in pcategory varchar(20), in orderFlag varchar(10), in recipeLimit int, in recipeOffset int )
+CREATE DEFINER=`root`@`localhost` PROCEDURE `show_all_recipe`( in pcategory varchar(25), in orderFlag varchar(10), in recipeLimit int, in recipeOffset int )
 BEGIN
 
   IF ( pcategory LIKE "All" ) THEN
     IF ( orderFlag LIKE "Asc" ) THEN
-	    SELECT title, category, description, author FROM recipe ORDER BY title ASC LIMIT recipeLimit OFFSET recipeOffset;
+	    SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c ORDER BY r.title ASC LIMIT recipeLimit OFFSET recipeOffset;
     ELSEIF ( orderFlag LIKE "Desc") THEN
-	    SELECT title, category, description, author FROM recipe ORDER BY title DESC LIMIT recipeLimit OFFSET recipeOffset;
+	    SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c ORDER BY r.title DESC LIMIT recipeLimit OFFSET recipeOffset;
     END IF;
   ELSE
     IF ( orderFlag LIKE "Asc") THEN
-	    SELECT title, category, description, author FROM recipe WHERE category = pcategory ORDER BY title ASC LIMIT recipeLimit OFFSET recipeOffset;
+	    SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c WHERE c.id = r.category_id AND c.name = pcategory ORDER BY r.title ASC LIMIT recipeLimit OFFSET recipeOffset;
     ELSEIF ( orderFlag LIKE "Desc" ) THEN
-	    SELECT title, category, description, author FROM recipe WHERE category = pcategory ORDER BY title DESC LIMIT recipeLimit OFFSET recipeOffset;
+	    SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c WHERE c.id = r.category_id AND c.name = pcategory ORDER BY r.title DESC LIMIT recipeLimit OFFSET recipeOffset;
     END IF;
   END IF;
 
@@ -429,20 +468,20 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `show_recipe`( in pauthor varchar(30), in pcategory varchar(20), in orderFlag varchar(10), in recipeLimit int, in recipeOffset int )
+CREATE DEFINER=`root`@`localhost` PROCEDURE `show_recipe`( in pauthor varchar(30), in pcategory varchar(25), in orderFlag varchar(10), in recipeLimit int, in recipeOffset int )
 BEGIN
 
   IF ( pcategory LIKE "All" ) THEN
     IF ( orderFlag LIKE "Asc" ) THEN
-	    SELECT title, category, description FROM recipe WHERE author = pauthor ORDER BY title ASC LIMIT recipeLimit OFFSET recipeOffset;
+	    SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id ORDER BY r.title ASC LIMIT recipeLimit OFFSET recipeOffset;
     ELSEIF ( orderFlag LIKE "Desc") THEN
-	    SELECT title, category, description FROM recipe WHERE author = pauthor ORDER BY title DESC LIMIT recipeLimit OFFSET recipeOffset;
+	    SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id ORDER BY r.title DESC LIMIT recipeLimit OFFSET recipeOffset;
     END IF;
   ELSE
     IF ( orderFlag LIKE "Asc") THEN
-	    SELECT title, category, description FROM recipe WHERE author = pauthor AND category = pcategory ORDER BY title ASC LIMIT recipeLimit OFFSET recipeOffset;
+	    SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id AND c.name = pcategory ORDER BY title ASC LIMIT recipeLimit OFFSET recipeOffset;
     ELSEIF ( orderFlag LIKE "Desc" ) THEN
-	    SELECT title, category, description FROM recipe WHERE author = pauthor AND category = pcategory ORDER BY title DESC LIMIT recipeLimit OFFSET recipeOffset;
+	    SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id AND c.name = pcategory ORDER BY title DESC LIMIT recipeLimit OFFSET recipeOffset;
     END IF;
   END IF;
 
@@ -483,4 +522,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-02-24 23:19:54
+-- Dump completed on 2017-07-21 12:24:16

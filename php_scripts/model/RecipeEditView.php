@@ -4,6 +4,13 @@ require_once(__DIR__ . "/Recipe.php");
 
 class RecipeEditView extends RecipeView
 {
+    private $recipe;
+
+    public function __construct()
+    {
+        $this->recipe = new Recipe();
+    }
+    
     public function showTitle()
     {
         echo "Title: <input type='text' name='title' id='titleField' value='{$this->title}' />";
@@ -12,16 +19,18 @@ class RecipeEditView extends RecipeView
     public function showCategory()
     {
         $result = "Category: <select name='category' id='categoryBox'>";
+        $categories = $this->recipe->getCategories();
         
-        foreach(Recipe::$categories as $c)
+        foreach($categories as $c)
         {
-            if( $this->category == $c )
+            $category = $c->name;
+            if($this->category == $category)
             {
-                $result .= "<option value='{$c}' selected>{$c}</option>";
+                $result .= "<option value='{$category}' selected>{$category}</option>";
             }
             else
             {
-                $result .= "<option value='{$c}'>{$c}</option>";
+                $result .= "<option value='{$category}'>{$category}</option>";
             }
         }
 

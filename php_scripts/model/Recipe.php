@@ -4,8 +4,10 @@ require_once(__DIR__ . "/User.php");
 require_once(__DIR__ . "/Logger.php");
 require_once(__DIR__ . "/Fpdf.php");
 
-class Recipe 
+class Recipe
 {
+    private static $DAY_IN_SECONDS = 86400;
+    
     private $title;
     private $category;
     private $preparationTime;
@@ -23,8 +25,6 @@ class Recipe
     private $instructionsCount;
 
     private $mysqli;
-
-    public static $categories = array("Beef","Chicken","Pork","Lamb","Seafood","Vegetable","Rice","Pasta","Soup","Dessert");
 
     public function __construct()
     {
@@ -108,7 +108,7 @@ class Recipe
         global $logger;
     
         $result = true;
-        $query = "CALL delete_recipe(?,?);";    
+        $query = "CALL delete_recipe(?,?);";
         
         if($stmt = $this->mysqli->prepare($query))
         {
@@ -140,7 +140,7 @@ class Recipe
             $logger->logMessage(basename(__FILE__), __LINE__, "delete", "CALL delete_recipe({$this->jsonData['title']}, {$author}). everything={$everything}");
 
             if($stmt->execute())
-            {           
+            {
                 if($newTitle)// edit 
                 {
                     @rename($image_path, $new_image_path);
@@ -210,7 +210,51 @@ class Recipe
 
         return $result;
     }
-    
+
+    public function getCategories()
+    {
+        $lastModified = @filemtime('cache.txt');
+        // Check if cache does not exists or is already 1 day old, if so then query database to refresh cache.
+        if($lastModified == null || $lastModified < time() - self::$DAY_IN_SECONDS)
+        {
+            $query = "CALL get_categories();";
+
+            if($stmt = $this->mysqli->prepare($query))
+            {
+                $stmt->execute();
+                $stmt->bind_result($id, $name);
+                $categories = array();
+                $i = 0;
+                while($stmt->fetch())
+                {
+                    $categories[$i]["id"] = $id;
+                    $categories[$i]["name"] = $name;
+                    $i++;
+                }
+
+                // Convert to json string
+                $data = json_encode($categories);
+
+                // store query result in cache.txt
+                file_put_contents('cache.txt', serialize($data));
+
+                // Convert to array of objects
+                return json_decode($data);
+            }
+            else
+            {
+                $logger->logMessage(basename(__FILE__), __LINE__, "create", "Error retrieving categories. error={$mysqli->error}");
+                die("Error preparing select sql statement.");
+            }
+        }
+        else
+        {
+            $data = json_decode(unserialize(file_get_contents('cache.txt')));
+            return $data;
+        }
+        
+    }
+
     public static function downloadAsPdf($file)
     {
         $filePath = PDF_DIR . "/{$file}";

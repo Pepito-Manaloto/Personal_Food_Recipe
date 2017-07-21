@@ -1,9 +1,11 @@
 <?php include('Header.php'); ?>
- 
+
 <?php
-require_once(__DIR__  . "/php_scripts/model/RecipeBrowseView.php");
+require_once(__DIR__ . "/php_scripts/model/RecipeBrowseView.php");
+require_once(__DIR__ . "/php_scripts/model/Recipe.php");
 
 $view = new RecipeBrowseView();
+$recipe = new Recipe();
 ?>
         
     <table id="viewTable">
@@ -14,32 +16,32 @@ $view = new RecipeBrowseView();
                 <th id="orderCategoryHeader" >Category<span></span></th>
                     <div id="orderCategoryDiv">
                         <p>All</p>
-                        <p>Beef</p>
-                        <p>Chicken</p>
-                        <p>Pork</p>
-                        <p>Lamb</p>
-                        <p>Seafood</p>
-                        <p>Pasta</p>
-                        <p>Vegetable</p>
-                        <p>Soup</p>
-                        <p>Dessert</p>
+                        <?php
+                            $categories = $recipe->getCategories();
+                            
+                            foreach($categories as $c)
+                            {
+                                $category = $c->name;
+                                echo "<p>{$category}</p>";
+                            }
+                        ?>
                     </div>
                 <th>Description</th>
                 <th>Author</th>
                 <th></th>
             </tr>
-        </thead>        
+        </thead>
             
         <tbody>
-            <?php 
-                if( $_GET['type'] == "All" )
+            <?php
+                if($_GET['type'] == "All")
                     $view->populateBrowseRecipe(); 
                 else if($_GET['type'] == "My" ) 
                     $view->populateMyRecipe(); 
                 else
                     header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/404/");
             ?>
-        </tbody>        
+        </tbody>
         
     </table>
     

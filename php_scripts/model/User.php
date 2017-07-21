@@ -9,9 +9,10 @@ class User
     private $password = "";
     private $confirmPassword = "";
     private $message = "";
+    private $recipe;
     
     public function __construct()
-    {       
+    {
         if(isset($_POST['name']) && isset($_POST['password']))
         {
             $this->name = htmlentities( $_POST['name'] ); //removes html entities
@@ -21,6 +22,8 @@ class User
                 $this->confirmPassword = htmlentities($_POST['confirmPassword']);
             }
         }
+        
+        $this->recipe = new Recipe();
     }
 
     public static function loggedIn()
@@ -119,7 +122,7 @@ class User
             $stmt->bind_result($result);
             
             $stmt->fetch();
-            $logger->logMessage(basename(__FILE__), __LINE__, "getRecipeCountByCategory", "CALL get_recipe_count({$author}, {$cat})");
+            $logger->logMessage(basename(__FILE__), __LINE__, "getRecipeCountByCategory", "CALL get_recipe_count({$author}, {$category})");
         }
         else
         {
@@ -134,11 +137,13 @@ class User
     public function showRecipeCountByCategory()
     {
         $result = "";
-        
-        foreach(Recipe::$categories as $c)
+        $categories = $this->recipe->getCategories();
+
+        foreach($categories as $c)
         {
-            $result .= "<li> {$c}: ";
-            $result .= $this->getRecipeCountByCategory($c);
+            $category = $c->name;
+            $result .= "<li> {$category}: ";
+            $result .= $this->getRecipeCountByCategory($category);
             $result .= " </li>";
         }
         

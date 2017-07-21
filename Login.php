@@ -19,7 +19,7 @@ if( User::loggedIn() )//check if already logged in
         <link rel="shortcut icon" href="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/images/favicon.png" />     
         <link rel="stylesheet" type="text/css" href="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/css/General.css">
         
-        <title>Personal Food Recipe - Login</title>      
+        <title>Personal Food Recipe - Login</title>
         
     </head>
     

@@ -19,7 +19,7 @@ AddType font/otf .otf
 AddType application/x-font-woff .woff
 
 # Protect the files
-<Files ~ ".gitignore|.htaccess|.*\.sql|.*\.log.*">
+<Files ~ ".gitignore|.htaccess|.*\.sql|.*\.log.*|.*\.txt">
 Order Allow,Deny
 Deny from all
 </Files>

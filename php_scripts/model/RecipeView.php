@@ -64,7 +64,7 @@ abstract class RecipeView
         
         $query = "CALL get_recipe(?);"; 
     
-        if($stmt = $mysqli->prepare($query))      
+        if($stmt = $mysqli->prepare($query))
         {
             $stmt->bind_param("s", $recipe);
             $stmt->execute();

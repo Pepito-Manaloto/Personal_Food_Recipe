@@ -1,5 +1,11 @@
 <?php include('Header.php'); ?>
 
+<?php
+require_once(__DIR__ . "/php_scripts/model/Recipe.php");
+
+$recipe = new Recipe();
+?>
+
     <form action="" method="POST">
             
         <div id="firstRow">
@@ -9,16 +15,15 @@
         
         <div id="secondRow">
             Category: <select name="category" id="categoryBox">
-                        <option value="Beef">Beef</option>
-                        <option value="Chicken">Chicken</option>
-                        <option value="Pork">Pork</option>
-                        <option value="Lamb">Lamb</option>
-                        <option value="Seafood">Seafood</option>
-                        <option value="Vegetable">Vegetable</option>
-                        <option value="Pasta">Pasta</option>
-                        <option value="Rice">Rice</option>
-                        <option value="Soup">Soup</option>
-                        <option value="Dessert">Dessert</option>
+                        <?php
+                            $categories = $recipe->getCategories();
+                            
+                            foreach($categories as $c)
+                            {
+                                $category = $c->name;
+                                echo "<option value='{$category}'>{$category}</option>";
+                            }
+                        ?>
                       </select> 
             Servings: <input type="text" name="servings" id="servingField"/>
         </div>   
@@ -41,8 +46,8 @@
         </div>
         
         <div id="instructionsContainer">
-                            
-        </div>   
+
+        </div>
         
         <div id="createValidateDiv"></div>
 
