@@ -18,7 +18,7 @@ if(isset($headers['Authorization']))
             $lastUpdated = $_GET['last_updated'];
         }
 
-        $logger->logMessage(basename(__FILE__), __LINE__, "GET", "Authenticated. Get by last_updated={$lastUpdated}");
+        $logger->logMessage(basename(__FILE__), __LINE__, "GET Recipe", "Authenticated. Get by last_updated={$lastUpdated}");
 
         $data = get($lastUpdated);
 
@@ -58,7 +58,7 @@ function get($lastUpdated)
     unset($recipeList["recently_added_count"]);
     $recipeListSize = count($recipeList);
 
-    $logger->logMessage(basename(__FILE__), __LINE__, "GET", "Recipe count={$recipeListSize}");
+    $logger->logMessage(basename(__FILE__), __LINE__, "GET Recipe", "Recipe count={$recipeListSize}");
 
     for($i = 0; $i < $recipeListSize; $i++)
     {
