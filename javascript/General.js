@@ -219,12 +219,12 @@ function createEditRecipeAjax(button,script)
                             });
                         $('#ingredientsContainer input[name="comments[]"]').each(function(index)
                             {
-                                if($(this).val() != "comment")
+                                if($(this).val() !== "comment")
                                 {
                                     jsonObject.comments[index] = $(this).val();
                                 }
                             });
-                        $('#instructionsContainer textarea').each(function(index)
+                        $("#instructionsContainer textarea").each(function(index)
                             {
                                 jsonObject.instructions[index] = $(this).val();
                             });
@@ -243,7 +243,7 @@ function createEditRecipeAjax(button,script)
                                     $("#createValidateDiv").text(result);
                                     $(".quantityField, .measurementField, .ingredientField, .commentField").blur();
 
-                                    if(result == "Recipe Added!")
+                                    if(result === "Recipe Added!")
                                     {
                                         window.location.href = baseUrl + "/Browse_Recipe/?type=My";
                                     }
@@ -274,11 +274,11 @@ function createEditRecipeActions()
     $("body").on("blur", ".quantityField, .measurementField, .ingredientField, .commentField",
                                 function()
                                 {
-                                    if($.trim($(this).val()) == "")
+                                    if($.trim($(this).val()) === "")
                                     {
                                         name = $(this).attr("name").substring(0, $(this).attr("name").length - 3); // Remove "s[]" from the name attrib of the field.
 
-                                        if(name == "quantitie")
+                                        if(name === "quantitie")
                                         {
                                             name = "quantity";
                                         }
@@ -294,12 +294,12 @@ function createEditRecipeActions()
                                 function()
                                 {
                                     name = $(this).attr("name").substring( 0, $(this).attr("name").length - 3 ); // Remove "s[]" from the name attrib of the field.
-                                    if(name == "quantitie")
+                                    if(name === "quantitie")
                                     {
                                         name = "quantity";
                                     }
 
-                                    if($(this).val() == name)
+                                    if($(this).val() === name)
                                     {
                                         $(this).val("");
                                         $(this).css("font-style", "normal");
@@ -350,7 +350,7 @@ function deleteRecipeAjax()
 
                                 var result = confirm("Are you sure?");
 
-                                if(result == true)
+                                if(result === true)
                                 {
                                     var data = {title: null, author: null};
 
@@ -456,6 +456,27 @@ function editProfileAjax()
                         });
 }
 
+//source: https://gist.github.com/alkos333/1771618
+function getUrlParam(key)
+{
+    var result = new RegExp(key + "=([^&]*)", "i").exec(window.location.search);
+
+    /*
+        In javascript, the rightmost TRUE value is returned.
+
+        if(result == true)
+        {
+            return decodeURIComponent(result[1]);
+        }
+        else
+        {
+            return result || ""; (return rightmost)
+                => return "";
+        }
+    */
+    return result && decodeURIComponent(result[1]) || "";
+}
+
 /*Global variables*/
 var sortCategory = "All";
 var orderBy = "Asc";
@@ -470,12 +491,12 @@ function viewRecipeSortAjax()
                         {
                             e.preventDefault();
 
-                            if( $("#orderTitleHeader").text() == "Title \u2191" ) // up arrow (ascending)
+                            if( $("#orderTitleHeader").text() === "Title \u2191" ) // up arrow (ascending)
                             {
                                 titleHeader = "Title \u2193";
                                 orderBy = "Desc";
                             }
-                            else if( $("#orderTitleHeader").text() == "Title \u2193" ) // down arrow (descending)
+                            else if( $("#orderTitleHeader").text() === "Title \u2193" ) // down arrow (descending)
                             {
                                 titleHeader = "Title \u2191";
                                 orderBy = "Asc";
@@ -519,9 +540,11 @@ function viewRecipeSortAjax()
                         {
                             sortCategory = $(this).text();
 
-                            if(orderBy == "")
+                            if(orderBy === "")
+                            {
                                 orderBy ="Asc";
-
+                            }
+                            
                             $.ajax({
                                       type: "GET",
                                       beforeSend: function(xhr)
@@ -535,7 +558,7 @@ function viewRecipeSortAjax()
                                       url: baseUrl + "/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order=" + orderBy + "&category=" + sortCategory
                                     }).done(function(result)
                                             {
-                                                if( sortCategory != "All" )
+                                                if( sortCategory !== "All" )
                                                 {
                                                     $("#orderCategoryDiv").css("display", "none");
                                                     $("#orderCategoryHeader span").html("<br/>( " + sortCategory + " )");
@@ -557,29 +580,6 @@ function viewRecipeSortAjax()
                                                 $("#viewTable tbody").css("opacity","1");
                                             });
                         });
-}
-
-
-//source: https://gist.github.com/alkos333/1771618
-
-function getUrlParam(key)
-{
-    var result = new RegExp(key + "=([^&]*)", "i").exec(window.location.search);
-
-    /*
-        In javascript, the rightmost TRUE value is returned.
-
-        if(result == true)
-        {
-            return decodeURIComponent(result[1]);
-        }
-        else
-        {
-            return result || ""; (return rightmost)
-                => return "";
-        }
-    */
-    return result && decodeURIComponent(result[1]) || "";
 }
 
 function viewRecipePagination()
