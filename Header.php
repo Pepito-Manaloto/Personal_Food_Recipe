@@ -2,10 +2,12 @@
 ob_start();
 require_once(__DIR__ . "/php_scripts/model/User.php");
 
-if( !isset($_SESSION) )
+if(!isset($_SESSION))
+{
     session_start();
-    
-if( !User::loggedIn() )//check if not logged in 
+}
+
+if(!User::loggedIn())//check if not logged in 
 {
     header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/Login/");
     exit;

@@ -3,25 +3,25 @@ require_once(__DIR__ . "/Database.php");
 require_once(__DIR__ . "/Logger.php");
 
 abstract class RecipeView
-{   
+{
     protected $title;
     protected $category;
     protected $preparationTime;
     protected $description;
     protected $servings;
-    
+
     protected $ingredients = array();
     protected $quantity = array();
     protected $measurement = array();
     protected $ingredient = array();
     protected $comment = array();
     protected $instructions = array();
-    
+
     public function getAllRecipeTitle($lastUpdated)
     {
-        global $db, $logger;
-        $mysqli = $db->getMySQLiConnection();
-        
+        global $dbConnection, $logger;
+        $mysqli = $dbConnection->getMySQLiConnection();
+
         $query = "CALL get_all_recipe_title(?, @recently_added_count);";
 
         if($stmt = $mysqli->prepare($query))
@@ -36,7 +36,7 @@ abstract class RecipeView
             {
                 $data[] = $title;
             }
-            
+
             $stmt->close();
             $logger->logMessage(basename(__FILE__), __LINE__, "getAllRecipeTitle", "CALL get_all_recipe_title({$lastUpdated}, @recently_added_count)");
         }
@@ -49,21 +49,21 @@ abstract class RecipeView
         $result = $select->fetch_assoc();
         $data['recently_added_count'] = $result['@recently_added_count'];
 
-        $db->closeConnection();
+        $dbConnection->closeConnection();
 
         return $data;
     }
 
     public function getRecipe($recipe)
     {
-        global $db, $logger;
-    
+        global $dbConnection, $logger;
+
         $this->title = $recipe;
 
-        $mysqli = $db->getMySQLiConnection();
-        
-        $query = "CALL get_recipe(?);"; 
-    
+        $mysqli = $dbConnection->getMySQLiConnection();
+
+        $query = "CALL get_recipe(?);";
+
         if($stmt = $mysqli->prepare($query))
         {
             $stmt->bind_param("s", $recipe);
@@ -71,7 +71,7 @@ abstract class RecipeView
 
             $data = array();
 
-            do 
+            do
             {
                 if($result = $stmt->get_result()) // Retrieves result 3 times
                 {
@@ -80,60 +80,76 @@ abstract class RecipeView
                 }
             }while($stmt->more_results() && $stmt->next_result());
 
-            if(count($data[0]) < 1)
-            {
-                header("Location: " . BASE_URL . "/Browse_Recipe/?type=My");
-                exit;
-            }
+            $this->validateRecipeDatabaseData($data);
 
-            // First select query
-            $this->category = $data[0][0]['category'];
-            $this->preparationTime = $data[0][0]['preparation_time'];
-            $this->description = $data[0][0]['description'];
-            $this->servings = $data[0][0]['servings'];
+            $this->setRecipeDetails($data);
 
-            // Second select query
-            for($i=0; $i < count($data[1]); $i++)
-            {
-                $data[1][$i]['quantity'] = $data[1][$i]['quantity'] + 0; // truncates trailing decimal zeros
-                $this->quantity[] = $data[1][$i]['quantity'];
-                $this->measurement[] = $data[1][$i]['measurement'];
-                $this->ingredient[] = $data[1][$i]['ingredient'];
-                $this->comment[] =  $data[1][$i]['comment_'];
-            }
-
-            // Third select query
-            for($i=0; $i < count($data[2]); $i++)
-            {
-                $this->instructions[] = $data[2][$i]['instruction'];
-            }
-            
-            //combine all ingredients to one array.
-            $size = count($this->quantity);
-            for($i = 0; $i<$size; $i++) //String treats $this->variable as a variable, but treats [$i] as String. So they must be enclosed in a {} to be treated as an array variable.
-            {
-                if( empty($this->comment[$i]) )
-                {
-                    $this->ingredients[] = "{$this->quantity[$i]} {$this->measurement[$i]} {$this->ingredient[$i]}";
-                }
-                else
-                {
-                    $this->ingredients[] = "{$this->quantity[$i]} {$this->measurement[$i]} {$this->ingredient[$i]} ({$this->comment[$i]})"; 
-                }
-            }
+            $this->mergeIngredients();
 
             $logger->logMessage(basename(__FILE__), __LINE__, "getRecipe", "CALL get_recipe({$recipe})");
-        }    
+        }
         else
         {
             $logger->logMessage(basename(__FILE__), __LINE__, "getRecipe", "Error in getting recipe information. error={$mysqli->error}");
         }
 
-        $db->closeConnection();
+        $dbConnection->closeConnection();
 
         return $data;
     }
-    
+
+    private function validateRecipeDatabaseData($data)
+    {
+        if(count($data[0]) < 1)
+        {
+            header("Location: " . BASE_URL . "/Browse_Recipe/?type=My");
+            exit;
+        }
+    }
+
+    private function setRecipeDetails($data)
+    {
+        // First select query
+        $this->category = $data[0][0]['category'];
+        $this->preparationTime = $data[0][0]['preparation_time'];
+        $this->description = $data[0][0]['description'];
+        $this->servings = $data[0][0]['servings'];
+
+		$ingredientsSize = count($data[1]);
+        // Second select query
+        for($i=0; $i < $ingredientsSize; $i++)
+        {
+            $data[1][$i]['quantity'] = $data[1][$i]['quantity'] + 0; // truncates trailing decimal zeros
+            $this->quantity[] = $data[1][$i]['quantity'];
+            $this->measurement[] = $data[1][$i]['measurement'];
+            $this->ingredient[] = $data[1][$i]['ingredient'];
+            $this->comment[] =  $data[1][$i]['comment_'];
+        }
+
+		$instructionsSize = count($data[2]);
+        // Third select query
+        for($i=0; $i < $instructionsSize; $i++)
+        {
+            $this->instructions[] = $data[2][$i]['instruction'];
+        }
+    }
+
+    private function mergeIngredients()
+    {
+        $size = count($this->quantity);
+        for($i = 0; $i < $size; $i++) //String treats $this->variable as a variable, but treats [$i] as String. So they must be enclosed in a {} to be treated as an array variable.
+        {
+            if( empty($this->comment[$i]) )
+            {
+                $this->ingredients[] = "{$this->quantity[$i]} {$this->measurement[$i]} {$this->ingredient[$i]}";
+            }
+            else
+            {
+                $this->ingredients[] = "{$this->quantity[$i]} {$this->measurement[$i]} {$this->ingredient[$i]} ({$this->comment[$i]})";
+            }
+        }
+    }
+
     /**
      * Converts each value of the array to UTF-8
      */

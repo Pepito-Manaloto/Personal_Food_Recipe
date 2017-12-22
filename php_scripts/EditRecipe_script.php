@@ -1,1 +1,1 @@
-<?php     require_once(__DIR__ . "/model/Recipe.php");        $recipe = new Recipe();        if( $recipe->edit() )    {        $recipe->commit();    }        $recipe->closeDatabaseConnection();?>
+<?php     require_once(__DIR__ . "/model/Recipe.php");        $recipe = new Recipe();        if($recipe->validate())    {        if($recipe->edit())        {            $recipe->commit();        }    }        $recipe->closeDatabaseConnection();?>

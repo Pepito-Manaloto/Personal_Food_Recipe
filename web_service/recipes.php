@@ -5,17 +5,22 @@ require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/Logger.php");
 $headers = apache_request_headers();
 global $logger;
 
-if(isset($headers['Authorization']))
+$authorization = isset($headers['Authorization']) ? $headers['Authorization'] : $headers['authorization'];
+
+if(isset($authorization))
 {
-    if($headers['Authorization'] === md5("aaron"))
+    $isAuthorized = $authorization === md5("aaron");
+    if($isAuthorized)
     {
-        if(!isset($_GET['last_updated']) || empty($_GET['last_updated'])) // If last_updated is not given, then set earliest date
+        $hasLastUpdatedHeader = isset($_GET['last_updated']) && !empty($_GET['last_updated']);
+
+        if($hasLastUpdatedHeader)
         {
-            $lastUpdated = "1950-01-01";
+            $lastUpdated = $_GET['last_updated'];
         }
         else
         {
-            $lastUpdated = $_GET['last_updated'];
+            $lastUpdated = "1950-01-01"; // If last_updated is not given, then set earliest date
         }
 
         $logger->logMessage(basename(__FILE__), __LINE__, "GET Recipe", "Authenticated. Get by last_updated={$lastUpdated}");
@@ -30,13 +35,15 @@ if(isset($headers['Authorization']))
     else
     {
         http_response_code(401); // Unauthorized
-        echo "Unauthorized access.";
+        $error = array("Error" => "Unauthorized access.");
+        echo json_encode($error);
     }
 }
 else
 {
     http_response_code(400); // Bad Request
-    echo "Please provide authorize key.";
+    $error = array("Error" => "Please provide authorize key.");
+    echo json_encode($error);
 }
 
 /**
@@ -60,15 +67,16 @@ function get($lastUpdated)
 
     $logger->logMessage(basename(__FILE__), __LINE__, "GET Recipe", "Recipe count={$recipeListSize}");
 
+    $hostname = $_SERVER['HTTP_HOST'];
     for($i = 0; $i < $recipeListSize; $i++)
     {
         $data[$recipeList[$i]] = $recipeView->getRecipe($recipeList[$i]); // $data[RecipeTitle][QueryIndex][RowIndexOfTheQuery][ColumnName]
 
-        $imagePath = "http://{$_SERVER['HTTP_HOST']}/Recipe/images/recipe_images/{$recipeList[$i]}.jpg";
+        $imagePath = "http://{$hostname}/Recipe/images/recipe_images/{$recipeList[$i]}.jpg";
         
         if(!file_exists($imagePath))
         {
-            $imagePath = "http://{$_SERVER['HTTP_HOST']}/Recipe/images/default.jpg";
+            $imagePath = "http://{$hostname}/Recipe/images/default.jpg";
         }
 
         //$data[$recipeList[$i]][] = base64_encode(file_get_contents($imagePath));

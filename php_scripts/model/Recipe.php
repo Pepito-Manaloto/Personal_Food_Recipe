@@ -7,7 +7,7 @@ require_once(__DIR__ . "/Fpdf.php");
 class Recipe
 {
     private static $DAY_IN_SECONDS = 86400;
-    
+
     private $title;
     private $category;
     private $preparationTime;
@@ -28,10 +28,10 @@ class Recipe
 
     public function __construct()
     {
-        global $db, $logger;
+        global $dbConnection, $logger;
 
-        $this->jsonData = json_decode(file_get_contents('php://input'), true); // Decode JSON to an array   
-        $this->mysqli = $db->getMySQLiConnection();
+        $this->jsonData = json_decode(file_get_contents('php://input'), true); // Decode JSON to an array
+        $this->mysqli = $dbConnection->getMySQLiConnection();
         $this->mysqli->autocommit(false);
 
         if(!is_dir(RECIPE_IMAGE_DIR))
@@ -46,13 +46,13 @@ class Recipe
             $logger->logMessage(basename(__FILE__), __LINE__, "constructor", "PDF directory created. path=" . PDF_DIR);
         }
     }
-    
+
     public function create($everything=true)
     {
         global $logger;
         $result = true;
-    
-        $query = "CALL add_recipe(?,?,?,?,?,?,?,?,?,?,?,?,?);"; 
+
+        $query = "CALL add_recipe(?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
         if($stmt = $this->mysqli->prepare($query))
         {
@@ -63,7 +63,7 @@ class Recipe
             $concatInstructions = implode('|',$this->instructions);
 
             $author = User::getUser();
-            
+
             $stmt->bind_param("ssisisssssisi", $this->title,$this->category,$this->preparationTime,
                                                $this->description,$this->servings, $author,$concatQuantity,
                                                $concatMeasurement,$concatIngredient,$concatComment,
@@ -97,43 +97,44 @@ class Recipe
         else
         {
             $logger->logMessage(basename(__FILE__), __LINE__, "create", "Error creating recipe. error={$mysqli->error}");
-            die("Error preparing add sql statement.");
+            $result = false;
         }
-        
+
         return $result;
-    }   
-    
+    }
+
     public function delete($everything=true)
     {
         global $logger;
-    
+
         $result = true;
         $query = "CALL delete_recipe(?,?);";
-        
+
         if($stmt = $this->mysqli->prepare($query))
         {
             $newTitle = false;
             $author = User::getUser();
-    
+
             if(!$everything) //edit recipe
             {
-                if( !isset($_SESSION) )
+                $session = $_SESSION;
+                if(!isset($session))
                 {
                     session_start();
                 }
 
                 $new_image_path = RECIPE_IMAGE_DIR . "/{$this->jsonData['title']}.jpg";
-                $image_path = RECIPE_IMAGE_DIR . "/{$_SESSION['editTitle']}.jpg";
+                $image_path = RECIPE_IMAGE_DIR . "/{$session['editTitle']}.jpg";
 
                 $newTitle = true;
-                
-                $stmt->bind_param("ss", $_SESSION['editTitle'], $author);           
+
+                $stmt->bind_param("ss", $session['editTitle'], $author);
             }
             else // delete recipe
-            {   
+            {
                 $image_path = RECIPE_IMAGE_DIR . "/{$this->jsonData['title']}.jpg";
                 $pdf_path = PDF_DIR . "/{$this->jsonData['title']}.pdf";
-                
+
                 $stmt->bind_param("ss", $this->jsonData['title'], $author);
             }
 
@@ -141,7 +142,7 @@ class Recipe
 
             if($stmt->execute())
             {
-                if($newTitle)// edit 
+                if($newTitle)// edit
                 {
                     @rename($image_path, $new_image_path);
                 }
@@ -166,12 +167,12 @@ class Recipe
         else
         {
             $logger->logMessage(basename(__FILE__), __LINE__, "delete", "Error deleting recipe. error={$mysqli->error}");
-            die("Error preparing delete sql statement.");
+            $result = false;
         }
-        
+
         return $result;
     }
-    
+
     public function edit()
     {
         global $logger;
@@ -183,31 +184,24 @@ class Recipe
         if($this->delete(false))
         {
             $logger->logMessage(basename(__FILE__), __LINE__, "edit", "Recipe deleted.");
-            
-            if($this->validate()) //validate edit fields
+
+            if($this->create(false))
             {
-                if($this->create(false))
-                {
-                    $logger->logMessage(basename(__FILE__), __LINE__, "edit", "Recipe created.");
-                    $result = true;
-                }
-                else
-                {
-                    $logger->logMessage(basename(__FILE__), __LINE__, "edit", "Recipe create failed, will rollback.");
-                    $this->mysqli->rollback(); //rollback delete
-                }
+                $logger->logMessage(basename(__FILE__), __LINE__, "edit", "Recipe created.");
+                $result = true;
             }
             else
             {
-                $logger->logMessage(basename(__FILE__), __LINE__, "edit", "Recipe validation failed, will rollback.");
+                $logger->logMessage(basename(__FILE__), __LINE__, "edit", "Recipe create failed, will rollback.");
                 $this->mysqli->rollback(); //rollback delete
             }
         }
         else
         {
             $logger->logMessage(basename(__FILE__), __LINE__, "edit", "Recipe delete failed.");
+            $this->mysqli->rollback(); //rollback delete (NOTE: currently not rolling back!)
         }
-
+ 
         return $result;
     }
 
@@ -244,7 +238,7 @@ class Recipe
             else
             {
                 $logger->logMessage(basename(__FILE__), __LINE__, "create", "Error retrieving categories. error={$mysqli->error}");
-                die("Error preparing select sql statement.");
+                throw new Exception("Error preparing select sql statement.");
             }
         }
         else
@@ -252,13 +246,12 @@ class Recipe
             $data = json_decode(unserialize(file_get_contents('cache.txt')));
             return $data;
         }
-        
     }
 
     public static function downloadAsPdf($file)
     {
         $filePath = PDF_DIR . "/{$file}";
-        
+
         if(file_exists($filePath))
         {
             header("Cache-Control: public");
@@ -270,35 +263,35 @@ class Recipe
         }
         else
         {
-            die("Download Failed. Pdf does not exists.");
+            throw new Exception("Download Failed. Pdf does not exists.");
         }
     }
-    
+
     public function commit()
     {
         $this->mysqli->commit();
     }
-    
+
     public function closeDatabaseConnection()
     {
-        global $db;
-        $db->closeConnection();
+        global $dbConnection;
+        $dbConnection->closeConnection();
     }
-    
+
     private function generatePDF()
     {
         $this->ingredientsCount = count($this->ingredient);
         $this->instructionsCount = count($this->instructions);
 
         $pdf = new FPDF('P', 'in', 'A4');
-        
+
         $pdf->AddPage();
         $pdf->SetFont('Arial', '', '14');
         $pdf->Cell(0,0.8,$this->title,0,1,'C');
 
         $pdf->SetFont('Arial', '', '9');
-        
-        $pdf->Cell(0,0.5,"Ingredient:",0,1,'L');    
+
+        $pdf->Cell(0,0.5,"Ingredient:",0,1,'L');
         for($i=0; $i<$this->ingredientsCount; $i++)
         {
             if( isset($this->comment[$i]) )
@@ -310,7 +303,7 @@ class Recipe
                 $pdf->Cell(0,0.25,"{$this->quantity[$i]} {$this->measurement[$i]} {$this->ingredient[$i]}",0,1,'L');
             }
         }
-        
+
         $pdf->Cell(0,0.2,"",0,1,'L');
         $pdf->Cell(0,0.5,"Instructions:",0,1,'L');
 
@@ -322,76 +315,134 @@ class Recipe
 
         $pdf->output(PDF_DIR . "/{$this->title}.pdf", "F");
     }
-    
-    public function validate()
-    {       
-        if(!empty($this->jsonData['title']) && !empty($this->jsonData['preparationTime']) && !empty($this->jsonData['servings']) && !empty($this->jsonData['description']))
-        {
-            $this->quantity = array_map("trim", $this->jsonData['quantities']);   
-            $this->measurement = array_map("trim", $this->jsonData['measurements']);
-            $this->ingredient = array_map("trim", $this->jsonData['ingredients']);
-            $this->comment = array_map("trim", $this->jsonData['comments']);
-            $this->instructions = array_map("trim", $this->jsonData['instructions']);
 
-            $this->ingredientsCount = count($this->quantity);
-            $this->instructionsCount = count($this->instructions);
-            
-            if(!is_numeric($this->jsonData['preparationTime']))
+    public function validate()
+    {
+        global $logger;
+
+        if(!$this->isRecipeDetailsEmpty())
+        {
+            if(!$this->isRecipeDetailsValid())
             {
-                echo "Preparation time should be a number.";
+                $logger->logMessage(basename(__FILE__), __LINE__, "validate", "Recipe details not valid.");
                 return false;
             }
-            else if(!is_numeric($this->jsonData['servings']))
+
+            $this->setRecipeDetails();
+            $this->setIngredientsDetails();
+            $this->setInstructionsDetails();
+
+            if(!$this->isIngredientsDetailsValid())
             {
-                echo "Servings should be a number.";
+                $logger->logMessage(basename(__FILE__), __LINE__, "validate", "Ingredients details not valid.");
                 return false;
             }
-            
-            for($i = 0; $i < $this->ingredientsCount; $i++)
+
+            if(!$this->isInstructionsDetailsValid())
             {
-                if(empty($this->measurement[$i]) || empty($this->ingredient[$i]))
-                {
-                    echo "Please complete all fields.";
-                    return false;   
-                }
-                
-                if( !is_numeric($this->quantity[$i]) )
-                {
-                    echo "quantity should be a number.";
-                    return false;
-                }
+                $logger->logMessage(basename(__FILE__), __LINE__, "validate", "Instructions details not valid.");
+                return false;
             }
-            
-            foreach($this->instructions as $instruction)
-            {
-                if( empty($instruction) )
-                {
-                    echo "Please complete all fields.";
-                    return false;
-                }               
-            }
-            
-            $this->title = trim($this->jsonData['title']);
-            $this->category = $this->jsonData['category'];
-            $this->preparationTime = $this->jsonData['preparationTime'];
-            $this->servings = $this->jsonData['servings'];
-            
-            if( empty($this->jsonData['description']) )
-            {
-                $this->description = "none";
-            }
-            else
-            {
-                $this->description = trim($this->jsonData['description']);
-            }
-            
+
             return true;
         }
         else
         {
+            $logger->logMessage(basename(__FILE__), __LINE__, "validate", "Recipe details empty.");
             echo "Please complete all fields.";
             return false;
         }
+    }
+
+    private function isRecipeDetailsEmpty()
+    {
+        return empty($this->jsonData['title']) &&
+               empty($this->jsonData['preparationTime']) &&
+               empty($this->jsonData['servings']) &&
+               empty($this->jsonData['description']);
+    }
+
+    private function isRecipeDetailsValid()
+    {
+        if(!is_numeric($this->jsonData['preparationTime']))
+        {
+            echo "Preparation time should be a number.";
+            return false;
+        }
+        else if(!is_numeric($this->jsonData['servings']))
+        {
+            echo "Servings should be a number.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private function setRecipeDetails()
+    {
+        $this->title = trim($this->jsonData['title']);
+        $this->category = $this->jsonData['category'];
+        $this->preparationTime = $this->jsonData['preparationTime'];
+        $this->servings = $this->jsonData['servings'];
+
+        if(empty($this->jsonData['description']))
+        {
+            $this->description = "none";
+        }
+        else
+        {
+            $this->description = trim($this->jsonData['description']);
+        }
+    }
+
+    private function setIngredientsDetails()
+    {
+        $this->quantity = array_map("trim", $this->jsonData['quantities']);
+        $this->measurement = array_map("trim", $this->jsonData['measurements']);
+        $this->ingredient = array_map("trim", $this->jsonData['ingredients']);
+        $this->comment = array_map("trim", $this->jsonData['comments']);
+
+        $this->ingredientsCount = count($this->quantity);
+    }
+
+    private function setInstructionsDetails()
+    {
+        $this->instructions = array_map("trim", $this->jsonData['instructions']);
+        $this->instructionsCount = count($this->instructions);
+    }
+
+    private function isIngredientsDetailsValid()
+    {
+        for($i = 0; $i < $this->ingredientsCount; $i++)
+        {
+            if(empty($this->measurement[$i]) || empty($this->ingredient[$i]))
+            {
+                echo "Please complete all fields.";
+                return false;
+            }
+
+            if(!is_numeric($this->quantity[$i]))
+            {
+                echo "quantity should be a number.";
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    private function isInstructionsDetailsValid()
+    {
+        foreach($this->instructions as $instruction)
+        {
+            if(empty($instruction))
+            {
+                echo "Please complete all fields.";
+                return false;
+            }
+        }
+        
+        return true;
     }
 }
 ?>

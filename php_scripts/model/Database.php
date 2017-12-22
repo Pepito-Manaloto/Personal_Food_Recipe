@@ -19,13 +19,11 @@ class Database
         if(mysqli_connect_errno())
         {
             http_response_code(500); // Internal Server Error
-            die("Could not connect");
+            throw new Exception("Could not connect.");
         }
-        else
-        {
-            $this->mysqli->set_charset(self::CHARSET);
-            return $this->mysqli;
-        }
+
+        $this->mysqli->set_charset(self::CHARSET);
+        return $this->mysqli;
     }
 
     public function getPDOConnection()
@@ -37,7 +35,7 @@ class Database
         catch(PDOException $e)
         {
             http_response_code(500); // Internal Server Error
-            die("Could not connect. {$e}");
+            throw new Exception("Could not connect. {$e}");
         }
         
         return $this->pdo;
@@ -54,6 +52,6 @@ class Database
     }
 }
 
-$db = new Database();
+$dbConnection = new Database();
 
 ?>
