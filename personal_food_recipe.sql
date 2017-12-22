@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: personal_food_recipe
 -- ------------------------------------------------------
--- Server version	10.1.10-MariaDB
+-- Server version   10.1.10-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -191,7 +191,7 @@ BEGIN
 
     INSERT INTO recipe(title,category_id,preparation_time,description,servings,author,datein, last_updated) VALUES(ptitle,(SELECT id FROM CATEGORIES WHERE name = pcategory),ppreparation_time,pdescription,pservings,pauthor,NOW(),NOW());
     SELECT id FROM recipe WHERE title = ptitle INTO tmp_recipe_id;
-    
+
     ingredients_loop: LOOP
 
       SET counter = counter + 1;
@@ -440,15 +440,15 @@ BEGIN
 
   IF ( pcategory LIKE "All" ) THEN
     IF ( orderFlag LIKE "Asc" ) THEN
-	    SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c ORDER BY r.title ASC LIMIT recipeLimit OFFSET recipeOffset;
+        SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c WHERE c.id = r.category_id ORDER BY r.title ASC LIMIT recipeLimit OFFSET recipeOffset;
     ELSEIF ( orderFlag LIKE "Desc") THEN
-	    SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c ORDER BY r.title DESC LIMIT recipeLimit OFFSET recipeOffset;
+        SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c WHERE c.id = r.category_id ORDER BY r.title DESC LIMIT recipeLimit OFFSET recipeOffset;
     END IF;
   ELSE
     IF ( orderFlag LIKE "Asc") THEN
-	    SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c WHERE c.id = r.category_id AND c.name = pcategory ORDER BY r.title ASC LIMIT recipeLimit OFFSET recipeOffset;
+        SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c WHERE c.id = r.category_id AND c.name = pcategory ORDER BY r.title ASC LIMIT recipeLimit OFFSET recipeOffset;
     ELSEIF ( orderFlag LIKE "Desc" ) THEN
-	    SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c WHERE c.id = r.category_id AND c.name = pcategory ORDER BY r.title DESC LIMIT recipeLimit OFFSET recipeOffset;
+        SELECT r.title, c.name as category, r.description, r.author FROM recipe r, categories c WHERE c.id = r.category_id AND c.name = pcategory ORDER BY r.title DESC LIMIT recipeLimit OFFSET recipeOffset;
     END IF;
   END IF;
 
@@ -473,15 +473,15 @@ BEGIN
 
   IF ( pcategory LIKE "All" ) THEN
     IF ( orderFlag LIKE "Asc" ) THEN
-	    SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id ORDER BY r.title ASC LIMIT recipeLimit OFFSET recipeOffset;
+        SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id ORDER BY r.title ASC LIMIT recipeLimit OFFSET recipeOffset;
     ELSEIF ( orderFlag LIKE "Desc") THEN
-	    SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id ORDER BY r.title DESC LIMIT recipeLimit OFFSET recipeOffset;
+        SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id ORDER BY r.title DESC LIMIT recipeLimit OFFSET recipeOffset;
     END IF;
   ELSE
     IF ( orderFlag LIKE "Asc") THEN
-	    SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id AND c.name = pcategory ORDER BY title ASC LIMIT recipeLimit OFFSET recipeOffset;
+        SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id AND c.name = pcategory ORDER BY title ASC LIMIT recipeLimit OFFSET recipeOffset;
     ELSEIF ( orderFlag LIKE "Desc" ) THEN
-	    SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id AND c.name = pcategory ORDER BY title DESC LIMIT recipeLimit OFFSET recipeOffset;
+        SELECT r.title, c.name as category, r.description FROM recipe r, categories c WHERE r.author = pauthor AND c.id = r.category_id AND c.name = pcategory ORDER BY title DESC LIMIT recipeLimit OFFSET recipeOffset;
     END IF;
   END IF;
 
