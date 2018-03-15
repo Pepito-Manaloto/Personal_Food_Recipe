@@ -20,12 +20,17 @@ class User
         $this->recipe = new Recipe();
     }
 
-    public static function getSession()
+    public static function startSession()
     {
         if(!isset($_SESSION))
         {
             session_start();
         }
+    }
+
+    public static function getSession()
+    {
+        self::startSession();
 
         $session = $_SESSION;
 

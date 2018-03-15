@@ -2,10 +2,7 @@
 ob_start();
 require_once(__DIR__ . "/php_scripts/model/User.php");
 
-if(!isset($_SESSION))
-{
-    session_start();
-}
+User::startSession();
 
 if(!User::loggedIn())//check if not logged in 
 {
@@ -24,9 +21,9 @@ if(!User::loggedIn())//check if not logged in
         <link rel="stylesheet" type="text/css" href="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/css/General.css">
     </head>
     
-    <body>      
+    <body>
      
-    <div class="outer"> 
+    <div class="outer">
         <div class="mainContent">
 
             <img class="headerImage" src="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/images/header.jpg" alt="Header Image" title="Header" />

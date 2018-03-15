@@ -1,11 +1,10 @@
-<?php 
+<?php
 ob_start();
 require_once(__DIR__ . "/php_scripts/model/User.php");
 
-if( !isset($_SESSION) )
-    session_start();
+User::startSession();
 
-if( User::loggedIn() )//check if already logged in
+if(User::loggedIn())//check if already logged in
 {
     header("Location: http://{$_SERVER['HTTP_HOST']}/Recipe/Home/");
     exit;
@@ -16,14 +15,13 @@ if( User::loggedIn() )//check if already logged in
 <html lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link rel="shortcut icon" href="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/images/favicon.png" />     
+        <link rel="shortcut icon" href="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/images/favicon.png" />
         <link rel="stylesheet" type="text/css" href="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/css/General.css">
-        
+
         <title>Personal Food Recipe - Login</title>
-        
     </head>
-    
-    <body>   
+
+    <body>
     <div class="outer">
     <div>
         <img class="logo" src="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/images/recipe_logo.gif" alt="Recipe Exchange" title="Logo" />
