@@ -58,6 +58,6 @@ if(!User::loggedIn())//check if not logged in
                 
                 <nav id="nameNavList" class="navList">
                     <a href="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/Profile/" class="link">Profile</a>
-                    <a href="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/php_scripts/Logout_script.php">Logout</a>
+                    <a href="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/php_scripts/Logout.php">Logout</a>
                 </nav>
             </div> 

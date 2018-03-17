@@ -57,7 +57,7 @@ else
 
     <p class="pclear"></p>
 
-    <form action="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/php_scripts/DownloadRecipe_script.php?title=<?php $view->showTitle(); ?>.pdf" method="POST" id="submitForm">
+    <form action="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/php_scripts/DownloadRecipe.php?title=<?php $view->showTitle(); ?>.pdf" method="POST" id="submitForm">
         <input type="submit" id="downloadPdfButton" value="Save as PDF" class="button" />
     </form>
 

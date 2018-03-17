@@ -1,0 +1,1 @@
+<?phpheader("Access-Control-Allow-Origin: *");header("Access-Control-Allow-Methods: PUT");require_once(__DIR__ . "/model/User.php");$user  = new User();$user->update();?>

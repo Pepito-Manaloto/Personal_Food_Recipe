@@ -15,7 +15,7 @@
 
         <p>Number of Ingredients: <a class="profileLinks" href="#">Expand</a> </p>
         
-        <form action="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/php_scripts/CreateBackup_script.php" method="POST" id="submitForm">
+        <form action="http://<?php echo $_SERVER['HTTP_HOST']; ?>/Recipe/php_scripts/CreateBackup.php" method="POST" id="submitForm">
             <input id="backupButton" type="submit" class="button" value="Create Backup"/> 
         </form>
     </div>

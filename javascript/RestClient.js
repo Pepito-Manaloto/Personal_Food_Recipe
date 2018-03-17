@@ -48,7 +48,7 @@ var RestClient = (function()
     {
         $.ajax({
             type: "POST",
-            url: baseUrl + "/php_scripts/Login_script.php",
+            url: baseUrl + "/php_scripts/Login.php",
             beforeSend: function(xhr)
             {
                 $("#loginArea img").show();
@@ -77,7 +77,7 @@ var RestClient = (function()
     {
         $.ajax({
             type: "POST",
-            url: baseUrl + "/php_scripts/Register_script.php",
+            url: baseUrl + "/php_scripts/Register.php",
             beforeSend: function(xhr)
             {
                 $("#registerForm img").show();
@@ -110,7 +110,7 @@ var RestClient = (function()
     {
         $.ajax({
             type: "POST",
-            url: baseUrl + "/php_scripts/CreateRecipe_script.php",
+            url: baseUrl + "/php_scripts/Recipe.php",
             contentType: "application/json; charset=UTF-8",
             beforeSend: beforeCreateOrEditRecipe,
             data: JSON.stringify(postData)
@@ -121,8 +121,8 @@ var RestClient = (function()
     RestClient.prototype.editRecipe = function(postData)
     {
         $.ajax({
-            type: "POST",
-            url: baseUrl + "/php_scripts/EditRecipe_script.php",
+            type: "PUT",
+            url: baseUrl + "/php_scripts/Recipe.php",
             contentType: "application/json; charset=UTF-8",
             beforeSend: beforeCreateOrEditRecipe,
             data: JSON.stringify(postData)
@@ -133,8 +133,8 @@ var RestClient = (function()
     RestClient.prototype.deleteRecipe = function(postData)
     {
         $.ajax({
-            type: "POST",
-            url: baseUrl + "/php_scripts/DeleteRecipe_script.php",
+            type: "DELETE",
+            url: baseUrl + "/php_scripts/Recipe.php",
             contentType: "application/json; charset=UTF-8",
             data: JSON.stringify(postData)
         })
@@ -147,8 +147,8 @@ var RestClient = (function()
     RestClient.prototype.editProfile = function(postData)
     {
         $.ajax({
-          type: "POST",
-          url: baseUrl + "/php_scripts/EditUser_script.php",
+          type: "PUT",
+          url: baseUrl + "/php_scripts/Profile.php",
           beforeSend: function(xhr)
           {
               $("#editProfileValidateDiv").css("color","blue");
@@ -184,7 +184,7 @@ var RestClient = (function()
         $.ajax({
           type: "GET",
           beforeSend: blurRecipeListTableBody,
-          url: baseUrl + "/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order="+orderBy + "&category=" + sortCategory
+          url: baseUrl + "/php_scripts/Recipe.php?type="+ typeParam +"&page=" + pageParam + "&order="+orderBy + "&category=" + sortCategory
         })
         .done(function(result)
         {
@@ -198,7 +198,7 @@ var RestClient = (function()
         $.ajax({
           type: "GET",
           beforeSend: blurRecipeListTableBody,
-          url: baseUrl + "/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order=" + orderBy + "&category=" + sortCategory
+          url: baseUrl + "/php_scripts/Recipe.php?type="+ typeParam +"&page=" + pageParam + "&order=" + orderBy + "&category=" + sortCategory
         })
         .done(function(result)
         {
@@ -223,7 +223,7 @@ var RestClient = (function()
     {
         $.ajax({
             type: "GET",
-            url: baseUrl + "/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order="+orderBy + "&category=" + sortCategory
+            url: baseUrl + "/php_scripts/Recipe.php?type="+ typeParam +"&page=" + pageParam + "&order="+orderBy + "&category=" + sortCategory
         })
         .done(function(result)
         {
