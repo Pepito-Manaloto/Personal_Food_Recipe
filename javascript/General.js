@@ -67,6 +67,86 @@ function navigationBarActions()
         });
 }
 
+function setIngredientsPlaceholderToEmptyString()
+{
+    $(".quantityField, .measurementField, .ingredientField, .commentField").each(function()
+    {
+        if($(this).val() === "quantity" || $(this).val() === "measurement" || $(this).val() === "ingredient" || $(this).val() === "comment")
+        {
+            $(this).val("");
+        }
+    });
+}
+
+function createRecipeJsonObjectRequest()
+{
+    var jsonObject = { title:null,category:null,preparationTime:null,description:null,servings:null,quantities:{},measurements:{},ingredients:{},comments:{},instructions:{} };
+
+    jsonObject.title = $("#titleField").val();
+    jsonObject.preparationTime = $("#timeField").val();
+    jsonObject.category = $("#categoryBox").val();
+    jsonObject.description = $("#descriptionField").val();
+    jsonObject.servings = $("#servingField").val();
+
+    $('#ingredientsContainer input[name="quantities[]"]').each(function(index)
+        {
+            jsonObject.quantities[index] = $(this).val();
+        });
+    $('#ingredientsContainer input[name="measurements[]"]').each(function(index)
+        {
+            jsonObject.measurements[index] = $(this).val();
+        });
+    $('#ingredientsContainer input[name="ingredients[]"]').each(function(index)
+        {
+            jsonObject.ingredients[index] = $(this).val();
+        });
+    $('#ingredientsContainer input[name="comments[]"]').each(function(index)
+        {
+            if($(this).val() !== "comment")
+            {
+                jsonObject.comments[index] = $(this).val();
+            }
+        });
+    $("#instructionsContainer textarea").each(function(index)
+        {
+            jsonObject.instructions[index] = $(this).val();
+        });
+
+    return jsonObject;
+}
+
+function createRecipeAjax()
+{
+    $("#continueButton").click(function(e)
+    {
+        e.preventDefault();
+
+        setIngredientsPlaceholderToEmptyString();
+
+        var jsonObject = createRecipeJsonObjectRequest();
+
+        restClient.createRecipe(jsonObject);
+
+        return false;
+    });
+}
+
+function editRecipeAjax()
+{
+    $("#editButton").click(function(e)
+    {
+        e.preventDefault();
+
+        setIngredientsPlaceholderToEmptyString();
+
+        var jsonObject = createRecipeJsonObjectRequest();
+
+        restClient.editRecipe(jsonObject);
+
+        return false;
+    });
+}
+
 function createSpanTab(text)
 {
     var span = document.createElement("span");
@@ -137,108 +217,17 @@ function createInstructionSet()
     return div;
 }
 
-function createRecipeAjax()
+function getIngredientNameTruncatingSquareBracketsAndS(element)
 {
-    $("#continueButton").click(function(e)
-                    {
-                        e.preventDefault();
+    var elementNameWithoutSquareBracketsAndSLength = $(element).attr("name").length - 3;
+    name = $(element).attr("name").substring(0, elementNameWithoutSquareBracketsAndSLength);
 
-                        $(".quantityField, .measurementField, .ingredientField, .commentField").each(function()
-                            {
-                                if($(this).val() === "quantity" || $(this).val() === "measurement" || $(this).val() === "ingredient" || $(this).val() === "comment")
-                                {
-                                    $(this).val("");
-                                }
-                            });
+    if(name === "quantitie")
+    {
+        name = "quantity";
+    }
 
-                        var jsonObject = { title:null,category:null,preparationTime:null,description:null,servings:null,quantities:{},measurements:{},ingredients:{},comments:{},instructions:{} };
-
-                        jsonObject.title = $("#titleField").val();
-                        jsonObject.preparationTime = $("#timeField").val();
-                        jsonObject.category = $("#categoryBox").val();
-                        jsonObject.description = $("#descriptionField").val();
-                        jsonObject.servings = $("#servingField").val();
-
-                        $('#ingredientsContainer input[name="quantities[]"]').each(function(index)
-                            {
-                                jsonObject.quantities[index] = $(this).val();
-                            });
-                        $('#ingredientsContainer input[name="measurements[]"]').each(function(index)
-                            {
-                                jsonObject.measurements[index] = $(this).val();
-                            });
-                        $('#ingredientsContainer input[name="ingredients[]"]').each(function(index)
-                            {
-                                jsonObject.ingredients[index] = $(this).val();
-                            });
-                        $('#ingredientsContainer input[name="comments[]"]').each(function(index)
-                            {
-                                if($(this).val() !== "comment")
-                                {
-                                    jsonObject.comments[index] = $(this).val();
-                                }
-                            });
-                        $("#instructionsContainer textarea").each(function(index)
-                            {
-                                jsonObject.instructions[index] = $(this).val();
-                            });
-
-                        restClient.createRecipe(jsonObject);
-
-                        return false;
-                    });
-}
-
-function editRecipeAjax()
-{
-    $("#editButton").click(function(e)
-                    {
-                        e.preventDefault();
-
-                        $(".quantityField, .measurementField, .ingredientField, .commentField").each(function()
-                            {
-                                if($(this).val() === "quantity" || $(this).val() === "measurement" || $(this).val() === "ingredient" || $(this).val() === "comment")
-                                {
-                                    $(this).val("");
-                                }
-                            });
-
-                        var jsonObject = { title:null,category:null,preparationTime:null,description:null,servings:null,quantities:{},measurements:{},ingredients:{},comments:{},instructions:{} };
-
-                        jsonObject.title = $("#titleField").val();
-                        jsonObject.preparationTime = $("#timeField").val();
-                        jsonObject.category = $("#categoryBox").val();
-                        jsonObject.description = $("#descriptionField").val();
-                        jsonObject.servings = $("#servingField").val();
-
-                        $('#ingredientsContainer input[name="quantities[]"]').each(function(index)
-                            {
-                                jsonObject.quantities[index] = $(this).val();
-                            });
-                        $('#ingredientsContainer input[name="measurements[]"]').each(function(index)
-                            {
-                                jsonObject.measurements[index] = $(this).val();
-                            });
-                        $('#ingredientsContainer input[name="ingredients[]"]').each(function(index)
-                            {
-                                jsonObject.ingredients[index] = $(this).val();
-                            });
-                        $('#ingredientsContainer input[name="comments[]"]').each(function(index)
-                            {
-                                if($(this).val() !== "comment")
-                                {
-                                    jsonObject.comments[index] = $(this).val();
-                                }
-                            });
-                        $("#instructionsContainer textarea").each(function(index)
-                            {
-                                jsonObject.instructions[index] = $(this).val();
-                            });
-
-                        restClient.editRecipe(jsonObject);
-
-                        return false;
-                    });
+    return name;
 }
 
 function createEditRecipeActions()
@@ -249,7 +238,7 @@ function createEditRecipeActions()
                         $(this).parent().nextAll().each(function(index) // Edit its succeeding next parents' count label, reduce by one.
                             {
                                 var span = $(this).find("span");
-                                var newCount = Number(span.text()) -1;
+                                var newCount = Number(span.text()) - 1;
 
                                 $(this).find("span").text(newCount);
                             });
@@ -263,12 +252,7 @@ function createEditRecipeActions()
                     {
                         if($.trim($(this).val()) === "")
                         {
-                            name = $(this).attr("name").substring(0, $(this).attr("name").length - 3); // Remove "s[]" from the name attrib of the field.
-
-                            if(name === "quantitie")
-                            {
-                                name = "quantity";
-                            }
+                            name = getIngredientNameTruncatingSquareBracketsAndS(this);
 
                             $(this).css("font-style", "italic");
                             $(this).val( name );
@@ -280,11 +264,7 @@ function createEditRecipeActions()
     $("body").on("focus", ".quantityField, .measurementField, .ingredientField, .commentField",
                     function()
                     {
-                        name = $(this).attr("name").substring( 0, $(this).attr("name").length - 3 ); // Remove "s[]" from the name attrib of the field.
-                        if(name === "quantitie")
-                        {
-                            name = "quantity";
-                        }
+                        name = getIngredientNameTruncatingSquareBracketsAndS(this);
 
                         if($(this).val() === name)
                         {
@@ -304,10 +284,10 @@ function createEditRecipeActions()
 
         $(".quantityField, .measurementField, .ingredientField, .commentField").blur();
     });
-    
+
     $("#addInstruction").click(function()
     {
-        $("#instructionsContainer").append( createInstructionSet()); // Create the div element first.
+        $("#instructionsContainer").append(createInstructionSet()); // Create the div element first.
 
         var instructionsCount = $("#instructionsContainer").children().length;
         $("#instructionsContainer").children().last().prepend(createSpanTab(instructionsCount)); // Prepend to last inserted div
@@ -430,6 +410,13 @@ var sortCategory = "All";
 var orderBy = "Asc";
 var typeParam = getUrlParam("type");
 var pageParam = getUrlParam("page");
+var upArrowUnicode = "\u2191";
+var downArrowUnicode = "\u2193";
+
+function getTitleSorted(arrow)
+{
+    return "Title " + arrow;
+}
 
 function viewRecipeSortAjax()
 {
@@ -438,14 +425,14 @@ function viewRecipeSortAjax()
         e.preventDefault();
 
         var titleHeader = "";
-        if( $("#orderTitleHeader").text() === "Title \u2191" ) // up arrow (ascending)
+        if($("#orderTitleHeader").text() === getTitleSorted(upArrowUnicode)) // ascending
         {
-            titleHeader = "Title \u2193";
+            titleHeader = getTitleSorted(downArrowUnicode);
             orderBy = "Desc";
         }
-        else if( $("#orderTitleHeader").text() === "Title \u2193" ) // down arrow (descending)
+        else if($("#orderTitleHeader").text() === getTitleSorted(downArrowUnicode)) // descending
         {
-            titleHeader = "Title \u2191";
+            titleHeader = getTitleSorted(upArrowUnicode);
             orderBy = "Asc";
         }
 
@@ -523,5 +510,5 @@ $(document).ready(function()
     viewRecipeSortAjax();
     viewRecipePagination();
 
-    $(".createAddButtons").click();
+    $(".createAddButtons").click(); // Add one ingredient and instruction
 });
