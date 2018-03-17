@@ -1,116 +1,70 @@
-var baseUrl = "http://localhost/Recipe";
+'use strict';
+
+var restClient = new RestClient();
+
 function loginAjax()
 {
     $("#loginButton").click(function()
-                            {
-                                var username = $("#username").val();
-                                var password = $("#password").val();
+    {
+        var username = $("#username").val();
+        var password = $("#password").val();
 
-                                var datastr ="username=" + username + "&password=" + password;
+        var datastr ="username=" + username + "&password=" + password;
 
-                                $.ajax({
-                                    type: "POST",
-                                    url: baseUrl + "/php_scripts/Login_script.php",
-                                    beforeSend: function(xhr)
-                                                {
-                                                    $("#loginArea img").show();
-                                                },
-                                    data: datastr
-                                }).done(function(result,b,c)
-                                        {
-                                           $("#loginArea img").hide();
+        restClient.login(datastr);
 
-                                           if(result !== "Login Successful!")
-                                           {
-                                               $("#login_error").css("color", "red");
-                                           }
-                                           else
-                                           {
-                                               $("#login_error").css("color", "green");
-                                               window.location.href = baseUrl + "/Home/";
-                                           }
-
-                                           $("#login_error").text(result);
-                                         });
-
-                                return false;
-                            });
+        return false;
+    });
 }
 
 function registerAjax()
 {
     $("#registerButton").click(function()
-                                {
-                                    var username = $("#username").val();
-                                    var password = $("#password").val();
-                                    var confirmPassword = $("#confirmPassword").val();
-                                    var datastr ="username=" + username + "&password=" + password + "&confirmPassword=" + confirmPassword;
+    {
+        var username = $("#username").val();
+        var password = $("#password").val();
+        var confirmPassword = $("#confirmPassword").val();
+        var datastr ="username=" + username + "&password=" + password + "&confirmPassword=" + confirmPassword;
 
-                                    $.ajax({
-                                        type: "POST",
-                                        url: baseUrl + "/php_scripts/Register_script.php",
-                                        beforeSend: function(xhr)
-                                                    {
-                                                        $("#registerForm img").show();
-                                                    },
-                                        data: datastr
-                                    }).done(function(result)
-                                            {
-                                               $("#registerForm img").hide();
+        restClient.register(datastr);
 
-                                               if(result != "Success")
-                                               {
-                                                   $("#register_error").css("color","red");
-                                                   $("#register_error").text(result);
-                                               }
-                                               else
-                                               {
-                                                   $("#register_error").css("color","green");
-                                                   $("#register_error").text("You have been registered successfully.");
-
-                                                   setTimeout(function()
-                                                              {
-                                                                  window.location.href = baseUrl + "/Login/";
-                                                              },500);
-                                                }
-                                             });
-
-                                    return false;
-                                });
+        return false;
+    });
 }
 
 function navigationBarActions()
 {
     $("#recipeLink, #recipeNavList").hover(
-                            function()
-                            {
-                                $("#recipeNavList").css("display", "block");
-                            },
-                            function()
-                            {
-                                $("#recipeNavList").css("display", "none");
-                            });
+        function()
+        {
+            $("#recipeNavList").css("display", "block");
+        },
+        function()
+        {
+            $("#recipeNavList").css("display", "none");
+        });
 
     $("#ingredientLink, #ingredientNavList").hover(
-                            function()
-                            {
-                                $("#ingredientNavList").css("display", "block");
-                            },
-                            function()
-                            {
-                                $("#ingredientNavList").css("display", "none");
-                            });
+        function()
+        {
+            $("#ingredientNavList").css("display", "block");
+        },
+        function()
+        {
+            $("#ingredientNavList").css("display", "none");
+        });
+
     $("#nameLink, #nameNavList").hover(
-                            function()
-                            {
-                                $("#nameNavList").css("display", "block");
-                                $("#nameLink img").attr("src", baseUrl + "/images/chef_hat_hover.png");
-                            },
-                            function()
-                            {
-                                $("#nameNavList").css("display", "none");
-                                $("#nameLink img").attr("src", baseUrl + "/images/chef_hat.png");
-                            });
+        function()
+        {
+            $("#nameNavList").css("display", "block");
+            $("#nameLink img").attr("src", baseUrl + "/images/chef_hat_hover.png");
+        },
+        function()
+        {
+            $("#nameNavList").css("display", "none");
+            $("#nameLink img").attr("src", baseUrl + "/images/chef_hat.png");
+        });
 }
 
 function createSpanTab(text)
@@ -183,15 +137,15 @@ function createInstructionSet()
     return div;
 }
 
-function createEditRecipeAjax(button,script)
+function createRecipeAjax()
 {
-    $(button).click(function(e)
+    $("#continueButton").click(function(e)
                     {
                         e.preventDefault();
 
                         $(".quantityField, .measurementField, .ingredientField, .commentField").each(function()
                             {
-                                if( $(this).val() === "quantity" || $(this).val() === "measurement" || $(this).val() === "ingredient" || $(this).val() === "comment")
+                                if($(this).val() === "quantity" || $(this).val() === "measurement" || $(this).val() === "ingredient" || $(this).val() === "comment")
                                 {
                                     $(this).val("");
                                 }
@@ -229,26 +183,59 @@ function createEditRecipeAjax(button,script)
                                 jsonObject.instructions[index] = $(this).val();
                             });
 
-                        $.ajax({
-                            type: "POST",
-                            url: baseUrl + "/php_scripts/" + script,
-                            contentType: "application/json; charset=UTF-8",
-                            beforeSend: function(xhr)
-                                        {
-                                            $("#createValidateDiv").text("Processing data please wait...");
-                                        },
-                            data: JSON.stringify(jsonObject)
-                        }).done( function(result)
-                                 {
-                                    $("#createValidateDiv").text(result);
-                                    $(".quantityField, .measurementField, .ingredientField, .commentField").blur();
+                        restClient.createRecipe(jsonObject);
 
-                                    if(result === "Recipe Added!")
-                                    {
-                                        window.location.href = baseUrl + "/Browse_Recipe/?type=My";
-                                    }
+                        return false;
+                    });
+}
 
-                                 });
+function editRecipeAjax()
+{
+    $("#editButton").click(function(e)
+                    {
+                        e.preventDefault();
+
+                        $(".quantityField, .measurementField, .ingredientField, .commentField").each(function()
+                            {
+                                if($(this).val() === "quantity" || $(this).val() === "measurement" || $(this).val() === "ingredient" || $(this).val() === "comment")
+                                {
+                                    $(this).val("");
+                                }
+                            });
+
+                        var jsonObject = { title:null,category:null,preparationTime:null,description:null,servings:null,quantities:{},measurements:{},ingredients:{},comments:{},instructions:{} };
+
+                        jsonObject.title = $("#titleField").val();
+                        jsonObject.preparationTime = $("#timeField").val();
+                        jsonObject.category = $("#categoryBox").val();
+                        jsonObject.description = $("#descriptionField").val();
+                        jsonObject.servings = $("#servingField").val();
+
+                        $('#ingredientsContainer input[name="quantities[]"]').each(function(index)
+                            {
+                                jsonObject.quantities[index] = $(this).val();
+                            });
+                        $('#ingredientsContainer input[name="measurements[]"]').each(function(index)
+                            {
+                                jsonObject.measurements[index] = $(this).val();
+                            });
+                        $('#ingredientsContainer input[name="ingredients[]"]').each(function(index)
+                            {
+                                jsonObject.ingredients[index] = $(this).val();
+                            });
+                        $('#ingredientsContainer input[name="comments[]"]').each(function(index)
+                            {
+                                if($(this).val() !== "comment")
+                                {
+                                    jsonObject.comments[index] = $(this).val();
+                                }
+                            });
+                        $("#instructionsContainer textarea").each(function(index)
+                            {
+                                jsonObject.instructions[index] = $(this).val();
+                            });
+
+                        restClient.editRecipe(jsonObject);
 
                         return false;
                     });
@@ -257,89 +244,89 @@ function createEditRecipeAjax(button,script)
 function createEditRecipeActions()
 {
     $("body").on("click", ".removeIngredient, .removeInstruction",
-                                            function()
-                                            {
-                                                $(this).parent().nextAll().each(function(index) // Edit its succeeding next parents' count label, reduce by one.
-                                                    {
-                                                        var span = $(this).find("span");
-                                                        var newCount = Number(span.text()) -1;
-
-                                                        $(this).find("span").text(newCount);
-                                                    });
-
-                                                $(this).parent().remove();
-                                            }
-                                        );
-
-    $("body").on("blur", ".quantityField, .measurementField, .ingredientField, .commentField",
-                                function()
-                                {
-                                    if($.trim($(this).val()) === "")
-                                    {
-                                        name = $(this).attr("name").substring(0, $(this).attr("name").length - 3); // Remove "s[]" from the name attrib of the field.
-
-                                        if(name === "quantitie")
-                                        {
-                                            name = "quantity";
-                                        }
-
-                                        $(this).css("font-style", "italic");
-                                        $(this).val( name );
-                                        $(this).css("color", "gray");
-                                    }
-
-                                }
-                            );
-    $("body").on("focus", ".quantityField, .measurementField, .ingredientField, .commentField",
-                                function()
-                                {
-                                    name = $(this).attr("name").substring( 0, $(this).attr("name").length - 3 ); // Remove "s[]" from the name attrib of the field.
-                                    if(name === "quantitie")
-                                    {
-                                        name = "quantity";
-                                    }
-
-                                    if($(this).val() === name)
-                                    {
-                                        $(this).val("");
-                                        $(this).css("font-style", "normal");
-                                        $(this).css("color", "black");
-                                    }
-                                }
-                            );
-
-    $("#addIngredient").click(function()
-                {
-                    $("#ingredientsContainer").append(createIngredientSet()); // Create the div element first.
-
-                    var ingredientsCount = $("#ingredientsContainer").children().length;
-                    $("#ingredientsContainer").children().last().prepend(createSpanTab(ingredientsCount)); // Prepend to last inserted div
-
-                    $(".quantityField, .measurementField, .ingredientField, .commentField").blur();
-                });
-    $("#addInstruction").click(function()
-                {
-                    $("#instructionsContainer").append( createInstructionSet()); // Create the div element first.
-
-                    var instructionsCount = $("#instructionsContainer").children().length;
-                    $("#instructionsContainer").children().last().prepend(createSpanTab(instructionsCount)); // Prepend to last inserted div
-                });
-
-    $("#ingredientsContainer, #instructionsContainer").sortable(
+                    function()
                     {
-                        axis: "y",
-                        handle: ".handle",
-                        placeholder: "draggablePlaceholder",
-                        forcePlaceholderSize: true,
-                        update: function(event, ui) // Only executes once, if DOM position has changed.
-                        {
-                            $(this).children().each(function(index) // Iterates through each div in the container and updates its count span text
+                        $(this).parent().nextAll().each(function(index) // Edit its succeeding next parents' count label, reduce by one.
                             {
-                                var newCount = index + 1;
+                                var span = $(this).find("span");
+                                var newCount = Number(span.text()) -1;
+
                                 $(this).find("span").text(newCount);
                             });
-                        },
-                    });
+
+                        $(this).parent().remove();
+                    }
+    );
+
+    $("body").on("blur", ".quantityField, .measurementField, .ingredientField, .commentField",
+                    function()
+                    {
+                        if($.trim($(this).val()) === "")
+                        {
+                            name = $(this).attr("name").substring(0, $(this).attr("name").length - 3); // Remove "s[]" from the name attrib of the field.
+
+                            if(name === "quantitie")
+                            {
+                                name = "quantity";
+                            }
+
+                            $(this).css("font-style", "italic");
+                            $(this).val( name );
+                            $(this).css("color", "gray");
+                        }
+                    }
+    );
+    
+    $("body").on("focus", ".quantityField, .measurementField, .ingredientField, .commentField",
+                    function()
+                    {
+                        name = $(this).attr("name").substring( 0, $(this).attr("name").length - 3 ); // Remove "s[]" from the name attrib of the field.
+                        if(name === "quantitie")
+                        {
+                            name = "quantity";
+                        }
+
+                        if($(this).val() === name)
+                        {
+                            $(this).val("");
+                            $(this).css("font-style", "normal");
+                            $(this).css("color", "black");
+                        }
+                    }
+    );
+
+    $("#addIngredient").click(function()
+    {
+        $("#ingredientsContainer").append(createIngredientSet()); // Create the div element first.
+
+        var ingredientsCount = $("#ingredientsContainer").children().length;
+        $("#ingredientsContainer").children().last().prepend(createSpanTab(ingredientsCount)); // Prepend to last inserted div
+
+        $(".quantityField, .measurementField, .ingredientField, .commentField").blur();
+    });
+    
+    $("#addInstruction").click(function()
+    {
+        $("#instructionsContainer").append( createInstructionSet()); // Create the div element first.
+
+        var instructionsCount = $("#instructionsContainer").children().length;
+        $("#instructionsContainer").children().last().prepend(createSpanTab(instructionsCount)); // Prepend to last inserted div
+    });
+
+    $("#ingredientsContainer, #instructionsContainer").sortable({
+        axis: "y",
+        handle: ".handle",
+        placeholder: "draggablePlaceholder",
+        forcePlaceholderSize: true,
+        update: function(event, ui) // Only executes once, if DOM position has changed.
+        {
+            $(this).children().each(function(index) // Iterates through each div in the container and updates its count span text
+            {
+                var newCount = index + 1;
+                $(this).find("span").text(newCount);
+            });
+        },
+    });
 }
 
 function deleteRecipeAjax()
@@ -362,16 +349,7 @@ function deleteRecipeAjax()
                                     $(this).closest("tr").find("td:eq(3)").text("DELETING");
                                     $(this).closest("tr").find("td:eq(4)").text("DELETING");
 
-                                    $.ajax({
-                                        type: "POST",
-                                        url: baseUrl + "/php_scripts/DeleteRecipe_script.php",
-                                        contentType: "application/json; charset=UTF-8",
-                                        data: JSON.stringify(data)
-                                    }).done(function(result)
-                                            {
-                                               window.location.href = baseUrl + "/Browse_Recipe/?type=My";
-                                            });
-
+                                    restClient.deleteRecipe(data);
                                 }
 
                                 return false;
@@ -381,79 +359,49 @@ function deleteRecipeAjax()
 function profileEvents()
 {
     $("#editProfileShadow, #editProfileExit").click(function(e)
-                        {
-                            e.preventDefault();
+    {
+        e.preventDefault();
 
-                            $("#editProfileDiv, #editProfileShadow").hide();
+        $("#editProfileDiv, #editProfileShadow").hide();
 
-                            return false;
-                        });
+        return false;
+    });
 
     $("#profileEditLink").click(function(e)
-                    {
-                        e.preventDefault();
+    {
+        e.preventDefault();
 
-                        $("#editProfileDiv, #editProfileShadow").show();
+        $("#editProfileDiv, #editProfileShadow").show();
 
-                        return false;
-                    });
+        return false;
+    });
 
     $("#profileExpandLink").click(function(e)
-                    {
-                        e.preventDefault();
+    {
+        e.preventDefault();
 
-                        $("#profileRecipeList").toggle();
+        $("#profileRecipeList").toggle();
 
-                        return false;
-                    });
-
+        return false;
+    });
 }
 
 function editProfileAjax()
 {
     $("#editProfileButton").click(function(e)
-                        {
-                            e.preventDefault();
+    {
+        e.preventDefault();
 
-                            var name = $("#username").val();
-                            var password = $("#password").val();
-                            var confirmPassword = $("#confirmPassword").val();
+        var name = $("#username").val();
+        var password = $("#password").val();
+        var confirmPassword = $("#confirmPassword").val();
 
-                            var datastr ="name=" + name + "&password=" + password + "&confirmPassword=" + confirmPassword;
+        var datastr ="name=" + name + "&password=" + password + "&confirmPassword=" + confirmPassword;
 
-                            $.ajax({
-                                      type: "POST",
-                                      url: baseUrl + "/php_scripts/EditUser_script.php",
-                                      beforeSend: function(xhr)
-                                      {
-                                          $("#editProfileValidateDiv").css("color","blue");
-                                          $("#editProfileValidateDiv").text("Processing data please wait...");
-                                      },
-                                      data: datastr
-                                   }).done(function(result)
-                                           {
-                                              $("#editProfileDiv").css("height", "210px");
-                                              $("#editProfileDiv").css("margin", "-160px 0 0 -160px");
+        restClient.editProfile(datastr);
 
-                                              if(result != "Success")
-                                              {
-                                                  $("#editProfileValidateDiv").css("color","red");
-                                                  $("#editProfileValidateDiv").text(result);
-                                              }
-                                              else
-                                              {
-                                                  $("#editProfileValidateDiv").css("color","green");
-                                                  $("#editProfileValidateDiv").text("Account updated.");
-
-                                                  setTimeout(function()
-                                                             {
-                                                                 window.location.href = baseUrl + "/Profile/";
-                                                             },500);
-                                              }
-                                           });
-
-                            return false;
-                        });
+        return false;
+    });
 }
 
 //source: https://gist.github.com/alkos333/1771618
@@ -485,157 +433,95 @@ var pageParam = getUrlParam("page");
 
 function viewRecipeSortAjax()
 {
-    var titleHeader = "";
-
     $("#orderTitleHeader").click(function(e)
-                        {
-                            e.preventDefault();
+    {
+        e.preventDefault();
 
-                            if( $("#orderTitleHeader").text() === "Title \u2191" ) // up arrow (ascending)
-                            {
-                                titleHeader = "Title \u2193";
-                                orderBy = "Desc";
-                            }
-                            else if( $("#orderTitleHeader").text() === "Title \u2193" ) // down arrow (descending)
-                            {
-                                titleHeader = "Title \u2191";
-                                orderBy = "Asc";
-                            }
+        var titleHeader = "";
+        if( $("#orderTitleHeader").text() === "Title \u2191" ) // up arrow (ascending)
+        {
+            titleHeader = "Title \u2193";
+            orderBy = "Desc";
+        }
+        else if( $("#orderTitleHeader").text() === "Title \u2193" ) // down arrow (descending)
+        {
+            titleHeader = "Title \u2191";
+            orderBy = "Asc";
+        }
 
-                            $.ajax({
-                                      type: "GET",
-                                      beforeSend: function(xhr)
-                                                  {
-                                                      $("#viewTable tbody").css("background","black");
-                                                      $("#viewTable tbody").css("filter","alpha(opacity=75)");
-                                                      $("#viewTable tbody").css("-moz-opacity","0.75");
-                                                      $("#viewTable tbody").css("-khtml-opacity","0.75");
-                                                      $("#viewTable tbody").css("opacity","0.75");
-                                                  },
-                                      url: baseUrl + "/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order="+orderBy + "&category=" + sortCategory
-                                    }).done(function(result)
-                                            {
-                                                $("#orderTitleHeader").text(titleHeader);
-                                                $("#viewTable tbody").html(result);
-                                                $("#viewTable tbody").css("background","white");
-                                                $("#viewTable tbody").css("filter","alpha(opacity=75)");
-                                                $("#viewTable tbody").css("-moz-opacity","1");
-                                                $("#viewTable tbody").css("-khtml-opacity","1");
-                                                $("#viewTable tbody").css("opacity","1");
-                                            });
+        restClient.sortRecipeByTitle(titleHeader, typeParam, pageParam, orderBy, sortCategory);
 
-                            return false;
-                        });
+        return false;
+    });
 
-    $("#orderCategoryHeader, #orderCategoryDiv").hover(function()
-                        {
-                            $("#orderCategoryDiv").css("display", "block");
-                        },
-                        function()
-                        {
-                            $("#orderCategoryDiv").css("display", "none");
-                        });
+    $("#orderCategoryHeader, #orderCategoryDiv").hover(
+        function()
+        {
+            $("#orderCategoryDiv").css("display", "block");
+        },
+        function()
+        {
+            $("#orderCategoryDiv").css("display", "none");
+        });
 
     $("#orderCategoryDiv p").click(function()
-                        {
-                            sortCategory = $(this).text();
+    {
+        sortCategory = $(this).text();
 
-                            if(orderBy === "")
-                            {
-                                orderBy ="Asc";
-                            }
-                            
-                            $.ajax({
-                                      type: "GET",
-                                      beforeSend: function(xhr)
-                                                  {
-                                                      $("#viewTable tbody").css("background","black");
-                                                      $("#viewTable tbody").css("filter","alpha(opacity=75)");
-                                                      $("#viewTable tbody").css("-moz-opacity","0.75");
-                                                      $("#viewTable tbody").css("-khtml-opacity","0.75");
-                                                      $("#viewTable tbody").css("opacity","0.75");
-                                                  },
-                                      url: baseUrl + "/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order=" + orderBy + "&category=" + sortCategory
-                                    }).done(function(result)
-                                            {
-                                                if( sortCategory !== "All" )
-                                                {
-                                                    $("#orderCategoryDiv").css("display", "none");
-                                                    $("#orderCategoryHeader span").html("<br/>( " + sortCategory + " )");
-                                                    $("#orderCategoryDiv").css("top", "302px");
-                                                }
-                                                else
-                                                {
-                                                    $("#orderCategoryDiv").css("display", "none");
-                                                    $("#orderCategoryHeader span").html("");
-                                                    $("#orderCategoryDiv").css("top", "273px");
-                                                }
+        if(orderBy === "")
+        {
+            orderBy ="Asc";
+        }
 
-                                                $("#viewTable tbody").html(result);
-
-                                                $("#viewTable tbody").css("background","white");
-                                                $("#viewTable tbody").css("filter","alpha(opacity=75)");
-                                                $("#viewTable tbody").css("-moz-opacity","1");
-                                                $("#viewTable tbody").css("-khtml-opacity","1");
-                                                $("#viewTable tbody").css("opacity","1");
-                                            });
-                        });
+        restClient.sortRecipeByCategory(typeParam, pageParam, orderBy, sortCategory);
+    });
 }
 
 function viewRecipePagination()
 {
     $("body").on("click", "#viewPaginationDiv a",function(e)
-            {
-                e.preventDefault();
+    {
+        e.preventDefault();
 
-                pageParam = $(this).text();
+        pageParam = $(this).text();
 
-                $.ajax({
-                    type: "GET",
-                    url: baseUrl + "/php_scripts/ViewRecipeSort_script.php?type="+ typeParam +"&page=" + pageParam + "&order="+orderBy + "&category=" + sortCategory
-                }).done(function(result)
-                        {
-                            $("#viewTable tbody").html(result);
-                            $("#viewPaginationDiv span").replaceWith("<a href='#'>" + $("#viewPaginationDiv span").text() + "</a>");
-                            $("#viewPaginationDiv a:contains(" + pageParam + ")").replaceWith("<span>" + pageParam + "<span/>");
-                        });
+        restClient.recipePagination(typeParam, pageParam, orderBy, sortCategory);
 
-                return false;
-            });
-
+        return false;
+    });
 }
 
-$(document).ready(
-            function()
-            {
-                $("#registerForm img").hide();
-                $("#loginArea img").hide();
+$(document).ready(function()
+{
+    $("#registerForm img").hide();
+    $("#loginArea img").hide();
 
-                $(".button").hover(function()
-                                    {
-                                        $(this).css("color","Black");
-                                    },
-                                    function()
-                                    {
-                                        $(this).css("color","#333333");
-                                    });
+    $(".button").hover(
+        function()
+        {
+            $(this).css("color","Black");
+        },
+        function()
+        {
+            $(this).css("color","#333333");
+        });
 
-                loginAjax();
-                registerAjax();
+    loginAjax();
+    registerAjax();
 
-                navigationBarActions();
+    navigationBarActions();
 
-                createEditRecipeAjax("#continueButton", "CreateRecipe_script.php");
-                createEditRecipeAjax("#editButton", "EditRecipe_script.php");
-                createEditRecipeActions();
+    createRecipeAjax();
+    editRecipeAjax();
+    createEditRecipeActions();
 
-                deleteRecipeAjax();
+    deleteRecipeAjax();
 
-                profileEvents();
-                editProfileAjax();
+    profileEvents();
+    editProfileAjax();
 
-                viewRecipeSortAjax();
-                viewRecipePagination();
+    viewRecipeSortAjax();
+    viewRecipePagination();
 
-                $(".createAddButtons").click();
-            });
+    $(".createAddButtons").click();
+});
