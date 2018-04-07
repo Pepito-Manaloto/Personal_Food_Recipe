@@ -1,68 +1,45 @@
 <?php
 require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/RecipeBrowseView.php");
 require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/Logger.php");
+require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/WebServiceUtils.php");
 
-$headers = apache_request_headers();
+$webServiceUtils = new WebServiceUtils();
 global $logger;
 
-$authorization = getAuthorizationHeader($headers);
+$result = $webServiceUtils->authenticate();
 
-if(isset($authorization))
+if($result == 200)
 {
-    $isAuthorized = $authorization === md5("aaron");
-    if($isAuthorized)
+    $hasLastUpdatedHeader = isset($_GET['last_updated']) && !empty($_GET['last_updated']);
+
+    if($hasLastUpdatedHeader)
     {
-        $hasLastUpdatedHeader = isset($_GET['last_updated']) && !empty($_GET['last_updated']);
-
-        if($hasLastUpdatedHeader)
-        {
-            $lastUpdated = $_GET['last_updated'];
-        }
-        else
-        {
-            $lastUpdated = "1950-01-01"; // If last_updated is not given, then set earliest date
-        }
-
-        $logger->logMessage(basename(__FILE__), __LINE__, "GET Recipe", "Authenticated. Get by last_updated={$lastUpdated}");
-
-        $data = get($lastUpdated);
-
-        http_response_code(200); // OK
-
-        header('Content-Type: application/json');
-        echo $data;
+        $lastUpdated = $_GET['last_updated'];
     }
     else
     {
-        returnErrorResponseDataAndCode(401, "Unauthorized access.");
+        $lastUpdated = "1950-01-01"; // If last_updated is not given, then set earliest date
     }
+
+    $logger->logMessage(basename(__FILE__), __LINE__, "GET Recipe", "Authenticated. Get by last_updated={$lastUpdated}");
+
+    $data = get($lastUpdated);
+
+    http_response_code(200); // OK
+
+    header('Content-Type: application/json');
+    echo $data;
 }
 else
 {
-      returnErrorResponseDataAndCode(400, "Please provide authorize key.");
-}
-
-function getAuthorizationHeader($headers)
-{
-    if(array_key_exists('Authorization', $headers))
+    if($result == 401)
     {
-        return isset($headers['Authorization']) ? $headers['Authorization'] : null;
+        $webServiceUtils->returnErrorResponseDataAndCode(401, "Unauthorized access.");
     }
-    else if(array_key_exists('authorization', $headers))
+    else if($result == 400)
     {
-        return isset($headers['authorization']) ? $headers['authorization'] : null;
+        $webServiceUtils->returnErrorResponseDataAndCode(400, "Please provide authorize key.");
     }
-    else
-    {
-        return null;
-    }
-}
-
-function returnErrorResponseDataAndCode($code, $errorMessage)
-{
-    http_response_code($code);
-    $error = array("Error" => $errorMessage);
-    echo json_encode($error);
 }
 
 /**
