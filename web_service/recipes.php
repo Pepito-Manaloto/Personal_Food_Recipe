@@ -34,15 +34,18 @@ if(isset($authorization))
     }
     else
     {
-        http_response_code(401); // Unauthorized
-        $error = array("Error" => "Unauthorized access.");
-        echo json_encode($error);
+        returnErrorResponseDataAndCode(401, "Unauthorized access.");
     }
 }
 else
 {
-    http_response_code(400); // Bad Request
-    $error = array("Error" => "Please provide authorize key.");
+      returnErrorResponseDataAndCode(400, "Please provide authorize key.");
+}
+
+function returnErrorResponseDataAndCode($code, $errorMessage)
+{
+    http_response_code($code);
+    $error = array("Error" => $errorMessage);
     echo json_encode($error);
 }
 
@@ -60,17 +63,21 @@ function get($lastUpdated)
     $recipeList = $recipeView->getAllRecipeTitle($lastUpdated);
 
     $data = array();
-    $data["recently_added_count"] = $recipeList["recently_added_count"];
-
+    $data["recently_added_count"] = (int) $recipeList["recently_added_count"];
     unset($recipeList["recently_added_count"]);
-    $recipeListSize = count($recipeList);
 
+    $recipeListSize = count($recipeList);
     $logger->logMessage(basename(__FILE__), __LINE__, "GET Recipe", "Recipe count={$recipeListSize}");
 
     $hostname = $_SERVER['HTTP_HOST'];
     for($i = 0; $i < $recipeListSize; $i++)
     {
-        $data[$recipeList[$i]] = $recipeView->getRecipe($recipeList[$i]); // $data[RecipeTitle][QueryIndex][RowIndexOfTheQuery][ColumnName]
+        $recipeFromDatabase = $recipeView->getRecipe($recipeList[$i]); // $data[RecipeTitle][QueryIndex][RowIndexOfTheQuery][ColumnName]
+
+        $recipeFromDatabase[0][0]["title"] = $recipeList[$i];
+        $data["recipes"][$i] = $recipeFromDatabase[0][0]; // The recipe details
+        $data["recipes"][$i]["ingredients"] = $recipeFromDatabase[1]; // The list of ingredients
+        $data["recipes"][$i]["instructions"] = $recipeFromDatabase[2]; // The list of instructions
 
         $imagePath = "http://{$hostname}/Recipe/images/recipe_images/{$recipeList[$i]}.jpg";
         

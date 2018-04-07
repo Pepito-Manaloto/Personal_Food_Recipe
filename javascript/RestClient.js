@@ -161,7 +161,7 @@ var RestClient = (function()
           $("#editProfileDiv").css("height", "210px");
           $("#editProfileDiv").css("margin", "-160px 0 0 -160px");
 
-          if(result != "Success")
+          if(result !== "Success")
           {
               $("#editProfileValidateDiv").css("color","red");
               $("#editProfileValidateDiv").text(result);
