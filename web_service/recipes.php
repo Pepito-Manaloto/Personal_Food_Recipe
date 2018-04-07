@@ -5,7 +5,7 @@ require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/Logger.php");
 $headers = apache_request_headers();
 global $logger;
 
-$authorization = isset($headers['Authorization']) ? $headers['Authorization'] : $headers['authorization'];
+$authorization = getAuthorizationHeader($headers);
 
 if(isset($authorization))
 {
@@ -40,6 +40,22 @@ if(isset($authorization))
 else
 {
       returnErrorResponseDataAndCode(400, "Please provide authorize key.");
+}
+
+function getAuthorizationHeader($headers)
+{
+    if(array_key_exists('Authorization', $headers))
+    {
+        return isset($headers['Authorization']) ? $headers['Authorization'] : null;
+    }
+    else if(array_key_exists('authorization', $headers))
+    {
+        return isset($headers['authorization']) ? $headers['authorization'] : null;
+    }
+    else
+    {
+        return null;
+    }
 }
 
 function returnErrorResponseDataAndCode($code, $errorMessage)

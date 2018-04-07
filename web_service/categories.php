@@ -5,7 +5,7 @@ require_once("{$_SERVER['DOCUMENT_ROOT']}/Recipe/php_scripts/model/Logger.php");
 $headers = apache_request_headers();
 global $logger;
 
-$authorization = isset($headers['Authorization']) ? $headers['Authorization'] : $headers['authorization'];
+$authorization = getAuthorizationHeader($headers);
 
 if(isset($authorization))
 {
@@ -24,16 +24,34 @@ if(isset($authorization))
     }
     else
     {
-        $logger->logMessage(basename(__FILE__), __LINE__, "GET Categories", "Unauthorized.");
-        http_response_code(401); // Unauthorized
-        $error = array("Error" => "Unauthorized access.");
-        echo json_encode($error);
+        returnErrorResponseDataAndCode(401, "Unauthorized access.");
     }
 }
 else
 {
-    http_response_code(400); // Bad Request
-    $error = array("Error" => "Please provide authorize key.");
+    returnErrorResponseDataAndCode(400, "Please provide authorize key.");
+}
+
+function getAuthorizationHeader($headers)
+{
+    if(array_key_exists('Authorization', $headers))
+    {
+        return isset($headers['Authorization']) ? $headers['Authorization'] : null;
+    }
+    else if(array_key_exists('authorization', $headers))
+    {
+        return isset($headers['authorization']) ? $headers['authorization'] : null;
+    }
+    else
+    {
+        return null;
+    }
+}
+
+function returnErrorResponseDataAndCode($code, $errorMessage)
+{
+    http_response_code($code);
+    $error = array("Error" => $errorMessage);
     echo json_encode($error);
 }
 ?>
