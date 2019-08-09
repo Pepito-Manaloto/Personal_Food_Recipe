@@ -296,7 +296,8 @@ class Recipe
         {
             if( isset($this->comment[$i]) )
             {
-                $pdf->Cell(0,0.25,"{$this->quantity[$i]} {$this->measurement[$i]} {$this->ingredient[$i]} {$this->comment[$i]}",0,1,'L');
+                $comment = iconv('UTF-8', 'windows-1252', $this->comment[$i]);
+                $pdf->Cell(0,0.25,"{$this->quantity[$i]} {$this->measurement[$i]} {$this->ingredient[$i]} {$comment}",0,1,'L');
             }
             else
             {
@@ -309,7 +310,8 @@ class Recipe
 
         for($i=0, $j=1; $i<$this->instructionsCount; $i++, $j++)
         {
-            $pdf->MultiCell(0,0.2,"{$j}. {$this->instructions[$i]}" ,0,'L');
+            $instruction = iconv('UTF-8', 'windows-1252', $this->instructions[$i]);
+            $pdf->MultiCell(0,0.2,"{$j}. {$instruction}" ,0,'L');
             $pdf->Cell(0,0.1,"",0,1,'L');
         }
 
